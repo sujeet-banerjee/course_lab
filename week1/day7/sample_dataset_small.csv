@@ -1,0 +1,8 @@
+question,context,answer,reference
+What is Kubernetes?,"Kubernetes is an open-source container orchestration platform.","Kubernetes is a container orchestration platform.","Kubernetes is an open-source container orchestration platform."
+
+Who created Docker?,"Docker was created by Solomon Hykes.","Docker was created by Solomon Hykes.","Docker was created by Solomon Hykes."
+
+What is RAG?,"Retrieval Augmented Generation combines retrieval and generation.","RAG combines retrieval and generation.","Retrieval Augmented Generation combines retrieval and generation."
+
+Who invented Kubernetes?,"Kubernetes was originally designed by Google engineers Joe Beda, Brendan Burns and Craig McLuckie.","Kubernetes was invented by Amazon.","Kubernetes was originally designed by Google engineers Joe Beda, Brendan Burns and Craig McLuckie."

@@ -1,0 +1,79 @@
+=================================  WITHOUT TOOL CALLING ============
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/chat12b" -Method POST -ContentType "application/json" -Body '{"userMessage": "Who am I? And who am I speaking to?", "sessionId": "ABC123"}'
+
+output
+------
+Déjà vu, Sujeet. You are Sujeet, and you are speaking to me, a helpful assistant. I'm a computer program designed to...
+
+
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/chat12b" -Method POST -ContentType "application/json" -Body '{"userMessage": "Well, what is 987654 * 123456", "sessionId": "ABC123"}'
+
+output
+------
+A math challenge, Sujeet. Let me calculate that for you....
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/chat12b" -Method POST -ContentType "application/json" -Body '{"userMessage": "Well, what is 987654 * 123456", "sessionId": "ABC123"}'
+
+output
+------
+We've already done this calculation, Sujeet. The result is:...
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/chat12b" -Method POST -ContentType "application/json" -Body '{"userMessage": "Well, what is the wether of Kanpur?", "sessionId": "ABC123"}'
+
+output
+------
+Déjà vu again, Sujeet. We already discussed the weather in Kanpur earlier. To recap, Kanpur has a humid subtropical ...
+
+
+
+=================================  Now with TOOL CALLING ============
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/querychat" -Method POST -ContentType "application/json" -Body '{"userMessage": "Well, what is the wether of Kanpur?", "sessionId": "ABC123"}'
+
+output
+------
+Hello Sujeet, I've checked the current weather in Kanpur for you. It's extremely hot with low humidity, so please do...
+
+
+
+S C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/querychat" -Method POST -ContentType "application/json" -Body '{"userMessage": "Well, what is 987654 * 123456", "sessionId": "ABC123"}'
+
+output
+------
+The result of multiplying 987654 by 123456 is 121,931,812,224. Would you like to try another calculation or move on ...
+
+
+
+
+S C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/querychat" -Method POST -ContentType "application/json" -Body '{"userMessage": "Well, what time is it now?", "sessionId": "ABC123"}'
+
+output
+------
+The current date and time is June 27, 2026, 4:30 PM IST. Would you like to know the time in a different time zone or...
+
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/querychat" -Method POST -ContentType "application/json" -Body '{"userMessage": "And what is USD in INR?", "sessionId": "ABC123"}'
+
+output
+------
+The current exchange rate for USD to INR is approximately 1 USD = 94.4 INR. Would you like to know the exchange rate...
+
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/querychat" -Method POST -ContentType "application/json" -Body '{"userMessage": "Ok. Now can you summarize all the previous questions I asked and their answers", "sessionId": "ABC123"}'
+
+output
+------
+Here's a summary of our conversation, Sujeet:\n\n1. You asked about the weather in Kanpur, and I told you that it has a humid subtropical climate with hot summers and mild winters.\n2. You asked again about the weather in Kanpur, and I checked the current weather for you using the HTTP Request tool. The current weather in Kanpur is extremely hot with low humidity.\n3. You asked me to calculate 987654 * 123456, and I used the Calculator Tool to get the result, which is 121,931,812,224.\n4. You asked me what time it is now, and I used the Time Tool to get the current date and time, which is June 27, 2026, 4:30 PM IST.\n5. You asked me to convert USD to INR, and I used the Exchange Tool to get the current exchange rate, which is approximately 1 USD = 94.4 INR.\n6. And finally, you asked me to summarize all our previous questions and answers, which I've just done!\n\nI hope that helps, Sujeet. Is there anything else I can help you with?	
+

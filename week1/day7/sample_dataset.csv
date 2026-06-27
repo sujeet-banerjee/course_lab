@@ -1,0 +1,33 @@
+question,context,answer,reference,scenario
+
+"What is Kubernetes?","Kubernetes is an open-source container orchestration platform.","Kubernetes is an open-source container orchestration platform.","Kubernetes is an open-source container orchestration platform.","A"
+
+"Who created Docker?","Docker was created by Solomon Hykes.","Docker was created by Solomon Hykes.","Docker was created by Solomon Hykes.","A"
+
+"What is LiteLLM?","LiteLLM provides a unified interface to multiple LLM providers.","LiteLLM provides a unified interface to multiple LLM providers.","LiteLLM provides a unified interface to multiple LLM providers.","A"
+
+"What is Qdrant?","Qdrant is an open-source vector database.","Qdrant is an open-source vector database.","Qdrant is an open-source vector database.","A"
+
+"What is Kubernetes?","Tomatoes grow well in summer. Redis is an in-memory cache.","Kubernetes is an open-source container orchestration platform.","Kubernetes is an open-source container orchestration platform.","B"
+
+"Who created Docker?","LangFuse provides observability. PostgreSQL is a database.","Docker was created by Solomon Hykes.","Docker was created by Solomon Hykes.","B"
+
+"What is RAG?","Anthropic develops Claude models. Redis is used for caching.","RAG combines retrieval and generation.","Retrieval Augmented Generation combines retrieval and generation.","B"
+
+"What is Ollama?","Qdrant is a vector database. PostgreSQL is relational.","Ollama runs local language models.","Ollama enables running large language models locally.","B"
+
+"What is Kubernetes?","Kubernetes is open-source.","Kubernetes is an open-source container orchestration platform.","Kubernetes is an open-source container orchestration platform.","C"
+
+"Who created Docker?","Docker was created by Solomon Hykes.","Docker was created by Solomon Hykes and started Docker Inc.","Docker was created by Solomon Hykes and led to Docker Inc.","C"
+
+"What is RAG?","RAG combines retrieval and generation.","RAG combines retrieval and generation to answer questions using external knowledge.","Retrieval Augmented Generation combines retrieval and generation using retrieved external knowledge.","C"
+
+"What is LangFuse?","LangFuse provides observability.","LangFuse provides observability for LLM applications.","LangFuse provides observability for LLM applications.","C"
+
+"What is Kubernetes?","Kubernetes is open-source. Kubernetes is used for orchestration. Tomatoes grow in summer. PostgreSQL is a database.","Kubernetes is an open-source orchestration platform.","Kubernetes is an open-source container orchestration platform.","D"
+
+"What is Docker?","Docker was created by Solomon Hykes. Tomatoes require water. Redis is a cache. Docker packages applications into containers.","Docker was created by Solomon Hykes and packages applications into containers.","Docker was created by Solomon Hykes and packages applications into containers.","D"
+
+"What is LiteLLM?","PostgreSQL is relational. LiteLLM provides a unified interface. Redis is a cache. LiteLLM supports multiple providers.","LiteLLM provides a unified interface for multiple LLM providers.","LiteLLM provides a unified interface for multiple LLM providers.","D"
+
+"What is Agentic AI?","Tomatoes are vegetables. Agentic AI systems use tools and reasoning. Agentic AI can perform actions. Redis is used for caching.","Agentic AI systems use tools, reasoning and actions.","Agentic AI systems can reason, use tools and perform actions.","D"

@@ -1,0 +1,15 @@
+Current weather:
+
+City: {{$json.city}}
+
+Temperature: {{ $json.temperature }} °C
+
+Humidity: {{$json.humidity}} %
+
+Wind Speed: {{$json.wind_speed}} km/h
+
+Visibility: {{$json.visibility}} km
+
+UV Index: {{$json.uv_index}}
+
+Condition: {{$json.condition}}

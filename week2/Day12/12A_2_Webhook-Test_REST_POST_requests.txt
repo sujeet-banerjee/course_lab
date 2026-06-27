@@ -1,0 +1,7 @@
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/chat2" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am Sujeet. Describe Kanpur weather.", "sessionId": "ABC123"}'
+
+>>
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/chat2" -Method POST -ContentType "application/json" -Body '{"userMessage": "Who am I? And who am I speaking to?", "sessionId": "ABC123"}'
+
+>>

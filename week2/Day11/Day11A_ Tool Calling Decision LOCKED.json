@@ -1,0 +1,438 @@
+{
+  "name": "Day11A: Tool Calling Decision LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Objective\n\n- Why LLMs need tools\n- What tool calling is\n- Difference between prompting vs tool use\n- How an agent decides which tool to invoke\n- Tool schemas\n- AI-generated structured actions\n- Multi-tool routing\n\n### Highlights\n- multiple Agents can share the same LLM.\n- The Context is owned by the agent (not the LLM)\n\n\nNote: *that this is not yet about memory or multi-agent systems—that comes later.*\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 336,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        -1024
+      ],
+      "id": "c4fee727-48fb-4e87-b90e-3ce8861ffb55",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "query",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1136,
+        -592
+      ],
+      "id": "5db8348c-fe37-4038-bb3e-2103d453e23c",
+      "name": "Webhook",
+      "webhookId": "92ddf58e-d56f-4635-a4c5-3a6254057605",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{ $json.body.city }}?format=j1",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $json.body.city }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        -560
+      ],
+      "id": "4ad754f8-e6a3-40ad-8325-17b66afe733c",
+      "name": "HTTP Request - For - Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8f2c011-7ed1-4692-9c6d-504d330b29ef",
+              "name": "city",
+              "value": "={{ $('Webhook').item.json.body.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -560
+      ],
+      "id": "703b747e-88e3-491a-a938-ae2595ded3d2",
+      "name": "Add City Name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e224bb94-9551-45ed-86ab-1ff395e8b229",
+              "name": "humidity",
+              "value": "={{ $json.current_condition[0].humidity }}",
+              "type": "string"
+            },
+            {
+              "id": "b97b7595-c0fb-4f21-924d-c687afb72d38",
+              "name": "temperature",
+              "value": "={{ $json.current_condition[0].temp_C }}",
+              "type": "string"
+            },
+            {
+              "id": "c4a68d18-c1c4-435d-b57f-f4077340cf05",
+              "name": "condition",
+              "value": "={{ $json.current_condition[0].weatherDesc[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "08468351-3c04-491b-bdaf-af83dcfacf80",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "e0d5a99f-18cb-48c5-a4e0-a69f7d3d0a0e",
+              "name": "uv_index",
+              "value": "={{ $json.current_condition[0].uvIndex }}",
+              "type": "string"
+            },
+            {
+              "id": "5e3fc52a-6e88-4959-81f6-5cf5c97d5267",
+              "name": "wind_speed",
+              "value": "={{ $json.current_condition[0].windspeedKmph }}",
+              "type": "string"
+            },
+            {
+              "id": "b4d1a035-bcf5-4c38-b844-ebff55cfb3b1",
+              "name": "visibility",
+              "value": "={{ $json.current_condition[0].visibility }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -560
+      ],
+      "id": "cd567c1f-ee7f-4d2a-9f2c-bbb926c3c6a4",
+      "name": "Collect required fields"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -336
+      ],
+      "id": "1f3ae1ed-fe45-4164-9adb-83c8e2115ea6",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Current weather:\n\nCity: {{$json.city}}\n\nTemperature: {{ $json.temperature }} °C\n\nHumidity: {{$json.humidity}} %\n\nWind Speed: {{$json.wind_speed}} km/h\n\nVisibility: {{$json.visibility}} km\n\nUV Index: {{$json.uv_index}}\n\nCondition: {{$json.condition}}",
+        "options": {
+          "systemMessage": "You are a weather advisory assistant.\n\nYour job is to analyse current weather conditions and produce\npractical advice for an ordinary person.\n\nConsider all available weather information, including:\n\n- temperature\n- humidity\n- wind speed\n- visibility\n- UV index\n- weather condition\n\nDo not simply repeat the weather.\n\nInstead provide:\n\n1. A one-sentence summary.\n2. Practical advice.\n3. Any precautions.\n4. Clothing recommendation.\n\nKeep the response concise (under 120 words). \n\nFor example:\nif weather conditions are extreme, you may simply summarize: \"stay at home\". However, for high UV Index, always warn in addition!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1008,
+        -560
+      ],
+      "id": "e9ddc214-f6d3-45b1-845d-60f9b0c00719",
+      "name": "AI Agent For Weather-Advice"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -912
+      ],
+      "id": "c926faa8-f72d-42f9-b099-2fcb5a8f94b2",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=operation: {{ $json.name }}\nexpression: {{ $json.expression }}",
+        "options": {
+          "systemMessage": "You are an expert mathematical calculator. For the given operation and expression calculate the result, and report it. Do not trim or round the result of the calculation in any way. Do not give any explanation, just give the answer after calculation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -432,
+        -912
+      ],
+      "id": "6c54e98e-bbb9-4946-9612-1355ae38db6f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "content": "**Calculation is not LLMs forte:**\n\nCorrect (expected)\n987654 × 123456 = 121,931,812,224\n\nLLM Output:\n987654 × 123456 = 121798355104\nwhich is INCORRECT!",
+        "height": 224,
+        "width": 368,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -1168
+      ],
+      "id": "eb4df478-0d7c-4543-a4f1-6b539f374c12",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "```\n                POST Request\n                     │\n                Webhook Trigger\n                     │\n             AI Agent (Assistant)\n                     │\n      ┌──────────────┼───────────────┐\n      │              │               │\nCalculator Tool   Weather Tool   Current Time Tool\n      │              │               │\n      └──────────────┼───────────────┘\n                     │\n             Respond to Webhook\n```",
+        "height": 256,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -976
+      ],
+      "id": "f41f74d7-e27a-41fe-85bf-e0fe40380ce9",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body }}",
+        "options": {
+          "systemMessage": "You are a helpful AI assistant.\n\nYour primary objective is to answer user questions accurately.\n\nYou have access to external tools.\n\nWhenever a tool can produce a more reliable answer than reasoning alone, use the tool.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nWeather\n→ Weather Tool\n\nCurrent date/time\n→ Time Tool\n\nGeneral knowledge\n→ Answer directly.\n\nNever invent calculator results when a calculator tool is available.\n\nAlways use the most appropriate tool."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -928,
+        -592
+      ],
+      "id": "48023430-7968-408b-ada4-da4d1f750523",
+      "name": "AI Intent Classification"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -320
+      ],
+      "id": "44b2af10-2a3c-46bc-a5e4-f23a851332be",
+      "name": "Calculator Tool",
+      "notesInFlow": true,
+      "notes": "Perform arithmetic calculations.\n\nUse this tool whenever the user asks for:\n\naddition\n\nsubtraction\n\nmultiplication\n\ndivision\n\npercentage\n\nsquare root\n\nmathematical expressions."
+    },
+    {
+      "parameters": {
+        "description": "Retrieve the current weather for a city.\n\nUse this tool whenever the user asks about:\n\nweather\n\ntemperature\n\nhumidity\n\nuv_index\n\nWeather advice or forcast\n\nrain\n\nclimate\n\n-----------------\nThe input must be a json, for example:\n\n \n{\n \n\"city\": \n\"Bangalore\"\n  \n}\n",
+        "workflowId": {
+          "__rl": true,
+          "value": "1EzvHoTIf4jgvj5A",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/1EzvHoTIf4jgvj5A"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        -320
+      ],
+      "id": "5680c053-7665-450d-b8a8-9480af4b893a",
+      "name": "Weather tool",
+      "notesInFlow": true
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "name": "Calculate",
+          "expression": "987654 × 123456"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - For - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Add City Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add City Name": {
+      "main": [
+        [
+          {
+            "node": "Collect required fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect required fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent For Weather-Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent For Weather-Advice",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Intent Classification": {
+      "main": [
+        []
+      ]
+    },
+    "Calculator Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "51a5cb7a-c67b-4a01-8ce9-707334a37980",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "mHQmSDu77EskwbsU",
+  "tags": []
+}

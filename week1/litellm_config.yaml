@@ -1,0 +1,15 @@
+model_list:
+  # 1. The main LLM
+  - model_name: ollama/llama3
+    litellm_params:
+      model: ollama/llama3
+      # Updated to reach the native Windows host instead of the Docker network
+      api_base: "http://host.docker.internal:11434"
+      
+  # 2. The Embeddings Model (used in your Ragas evaluations)
+  - model_name: ollama/nomic-embed-text
+    litellm_params:
+      model: ollama/nomic-embed-text
+      # Updated to reach the native Windows host instead of the Docker network
+      api_base: "http://host.docker.internal:11434"
+      mode: embedding

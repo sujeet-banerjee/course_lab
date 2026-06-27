@@ -1,0 +1,317 @@
+{
+  "name": "Day11B: Tool Calling Decision LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Objective\n\n- Why LLMs need tools\n- What tool calling is\n- Difference between prompting vs tool use\n- How an agent decides which tool to invoke\n- Tool schemas\n- AI-generated structured actions\n- Multi-tool routing\n\n### Highlights\n- multiple Agents can share the same LLM.\n- The Context is owned by the agent (not the LLM)\n\n\nNote: *that this is not yet about memory or multi-agent systems—that comes later.*\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 336,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        -1264
+      ],
+      "id": "412d6f48-31aa-4802-a9de-84aeca6a5f9f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "query",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1168,
+        -832
+      ],
+      "id": "71b7416b-703f-481f-9937-34e073dd7351",
+      "name": "Webhook",
+      "webhookId": "b134b075-46e5-4e6f-b645-2298e091ac00",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -544
+      ],
+      "id": "61fd244e-584c-4f3f-bb02-b406abfb10c2",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Calculation is not LLMs forte:**\n\nCorrect (expected)\n987654 * 123456 = 121,931,812,224\n\nLLM Output:\n987654 × 123456 = 121798355104\nwhich is INCORRECT!",
+        "height": 224,
+        "width": 368,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -1168
+      ],
+      "id": "0c058fe3-fba0-448b-95da-0b5308a3d148",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "```\n                POST Request\n                     │\n                Webhook Trigger\n                     │\n             AI Agent (Assistant)\n                     │\n      ┌──────────────┼───────────────┐\n      │              │               │\nCalculator Tool   Weather Tool   Current Time Tool\n      │              │               │\n      └──────────────┼───────────────┘\n                     │\n             Respond to Webhook\n```",
+        "height": 256,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -912
+      ],
+      "id": "7a95c1f9-a210-4039-a05e-115bf8fcac73",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $json.body.query }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a helpful AI assistant.\n\nYour primary objective is to answer user query accurately.\n\nYou have access to external tools.\n\nWhenever a tool can produce a more reliable answer than reasoning alone, use the tool.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nWeather\n→ Weather Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\nGeneral knowledge\n→ Answer directly.\n\nNever invent calculator results when a calculator tool is available.\n\nAlways use the most appropriate tool. \n\nIf using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body. \n\nAlways form an appropriate response from the tool output, without explicitly quoting the 'output from the HTTP_Request tool'",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -960,
+        -832
+      ],
+      "id": "666cdde4-244b-44bc-abb1-678e837a04f4",
+      "name": "AI Intent Classification"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -560
+      ],
+      "id": "3dc4cdf6-8356-4921-8e74-bc65e4038d19",
+      "name": "Calculator Tool",
+      "notesInFlow": true,
+      "notes": "Perform arithmetic calculations.\n\nUse this tool whenever the user asks for:\n\naddition\n\nsubtraction\n\nmultiplication\n\ndivision\n\npercentage\n\nsquare root\n\nmathematical expressions."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1024,
+        -416
+      ],
+      "id": "6025da30-1f9f-4c2e-849d-bc935168f0e0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "oKAsFdLq1qQDPXS8",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Weather Tool: Retrieves the current weather for a city.\n\nUse this tool whenever the user asks about:\n\nweather\n\ntemperature\n\nhumidity\n\nforcast\n\nWeather advice\n\nrain\n\nclimate\n\nTOOL INPUT:\nThe input must be a json, with \"city\" field as mandatory, for example:\n  \n{\n \n\"city\": \n\"Bangalore\"\n}\n",
+        "method": "POST",
+        "url": "=http://localhost:5678/webhook/weather",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $fromAI('city', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -432,
+        -592
+      ],
+      "id": "8892413f-038b-4556-a31d-9382d9351189",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -432
+      ],
+      "id": "2e91458f-16bb-43cb-9094-2d7af4627ebd",
+      "name": "Time Tool"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Provide the currency exchange value from 'from_currency' to 'to_currency'. \n\nInputs required: from_currency and to_currency\n",
+        "url": "https://api.frankfurter.dev/v1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "base",
+              "value": "={{ $fromAI(     'from_currency',     'Three-letter source currency code such as USD, EUR, INR',     'string' )}}"
+            },
+            {
+              "name": "symbols",
+              "value": "={{ $fromAI(     'to_currency',     'Three-letter target currency code',     'string' )}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -864,
+        -448
+      ],
+      "id": "edb1feae-6576-442b-9541-7eb3cc3f33e8",
+      "name": "Exchange Tool"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Intent Classification": {
+      "main": [
+        []
+      ]
+    },
+    "Calculator Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exchange Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3a996b17-659e-41dc-889f-a4e8dc169c6d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "k9QRxvWIDiw88XnM",
+  "tags": []
+}

@@ -1,0 +1,510 @@
+{
+  "name": "Day12A_2: Simple Chat with Postgres memory LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Objective\n\nBy the end of Day 12 students should understand:\n\n- Why LLMs are stateless\n- Why chat appears stateful\n- Conversation memory\n- Session IDs\n- Memory storage\n- Short-term vs Long-term memory\n- Why databases are required\n- Memory retrieval\n- Privacy considerations\n\n### Highlights\n- multiple Agents can share the same LLM.\n- The Context is owned by the agent (not the LLM), and the agent uses memory to maintain the state (conversation history)\n\n\nNote: *that this is not yet about memory or multi-agent systems—that comes later.*\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 640,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        -1712
+      ],
+      "id": "495c7e2c-9ddd-4dd0-857c-0ee3f838c198",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "querychat",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        -1440
+      ],
+      "id": "fd50ad4e-7a87-4c07-90dc-97d266d71944",
+      "name": "Webhook",
+      "webhookId": "3c155200-7736-4835-b727-7374d46e0e0d",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        -1152
+      ],
+      "id": "e4ebb25e-c8fc-4368-a527-4ffc3ba5614e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**LLMs are stateless**\nThe Agent acts like a wrapper, which maintains the history (memory)\n",
+        "height": 112,
+        "width": 272,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -1616
+      ],
+      "id": "0a6ab8fc-8143-4a64-8583-ac9f839e8ab0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "```\n                POST Request\n                     │\n                Webhook Trigger\n                     │\n             AI Agent (Assistant)\n                     │\n      ┌──────────────┼───────────────┐\n      |              |               |\n                Memory \n            (Conv. History)\n \n```",
+        "height": 256,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -1696
+      ],
+      "id": "d818dd79-7009-4f21-a3a4-1fc96169386c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $json.body.query }}\nuser session ID: {{ $json.body.sessionId }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a helpful AI assistant.\n\nYour primary objective is to answer user query accurately. Additionally, the user may be interested in ongoing chat, so engage him appropriately\n\nYou have access to external tools.\n\nWhenever a tool can produce a more reliable answer than reasoning alone, use the tool.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nWeather\n→ Weather Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\nGeneral knowledge\n→ Answer directly.\n\nNever invent calculator results when a calculator tool is available.\n\nAlways use the most appropriate tool. \n\nIf using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body. \n\nAlways form an appropriate response from the tool output, without explicitly quoting the 'output from the HTTP_Request tool'",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1184,
+        -1440
+      ],
+      "id": "dc812b38-4226-48f7-ad72-abca2b1516a2",
+      "name": "AI Intent Classification"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -1168
+      ],
+      "id": "7b7e0498-b160-49f4-ab78-6149cb0df53b",
+      "name": "Calculator Tool",
+      "notesInFlow": true,
+      "notes": "Perform arithmetic calculations.\n\nUse this tool whenever the user asks for:\n\naddition\n\nsubtraction\n\nmultiplication\n\ndivision\n\npercentage\n\nsquare root\n\nmathematical expressions."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        -1024
+      ],
+      "id": "c5f15798-966d-4b23-bc18-13e9cf2182a2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "oKAsFdLq1qQDPXS8",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Weather Tool: Retrieves the current weather for a city.\n\nUse this tool whenever the user asks about:\n\nweather\n\ntemperature\n\nhumidity\n\nforcast\n\nWeather advice\n\nrain\n\nclimate\n\nTOOL INPUT:\nThe input must be a json, with \"city\" field as mandatory, for example:\n  \n{\n \n\"city\": \n\"Bangalore\"\n}\n",
+        "method": "POST",
+        "url": "=http://localhost:5678/webhook/weather",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $fromAI('city', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1712,
+        -1200
+      ],
+      "id": "2bc6cac6-e17d-40cd-af2b-9abe439347bf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -1040
+      ],
+      "id": "c7144732-0834-4c8b-bfd7-cb610d01f8ea",
+      "name": "Time Tool"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Provide the currency exchange value from 'from_currency' to 'to_currency'. \n\nInputs required: from_currency and to_currency\n",
+        "url": "https://api.frankfurter.dev/v1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "base",
+              "value": "={{ $fromAI(     'from_currency',     'Three-letter source currency code such as USD, EUR, INR',     'string' )}}"
+            },
+            {
+              "name": "symbols",
+              "value": "={{ $fromAI(     'to_currency',     'Three-letter target currency code',     'string' )}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1360,
+        -1024
+      ],
+      "id": "5fcef87a-dc8b-4402-9248-66ccb79165ce",
+      "name": "Exchange Tool"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user message: {{ $json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant. The user wants to chat with you for fun. Respond to the usre messages appropriately."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -880,
+        -1408
+      ],
+      "id": "28c48878-e6ce-4b91-9be3-3f889203d6fd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -1056
+      ],
+      "id": "2c9f9798-fcac-484a-b869-2fe6426a4601",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -560,
+        -1072
+      ],
+      "id": "041d1cdd-b2c2-4ff1-9f71-c0bf5f4cfa7d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -944,
+        -1024
+      ],
+      "id": "65e9865f-7b4a-4c57-9eec-15eb425ef862",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "oKAsFdLq1qQDPXS8",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "tableName": "n8n_day12_chat_histories",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        -768,
+        -1040
+      ],
+      "id": "46dfd832-be69-44c0-80b4-d9ae791b6b42",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "ketEqaWL9VPs12IH",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat2",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1088,
+        -1408
+      ],
+      "id": "65f20834-d56d-4344-8c73-729b1cbc31da",
+      "name": "Webhook_simple_mem_test",
+      "webhookId": "f74fdfca-edba-4362-98cc-f4c5a90a4424"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        -1376
+      ],
+      "id": "a925bc7c-5d52-48cf-9f65-c4dbe2d73dc6",
+      "name": "simple_test_hardcoded"
+    }
+  ],
+  "pinData": {
+    "simple_test_hardcoded": [
+      {
+        "json": {
+          "userMessage": "I am Sujeet. I am an Educator",
+          "sessionId": "ABC123"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Intent Classification": {
+      "main": [
+        []
+      ]
+    },
+    "Calculator Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exchange Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Intent Classification",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_simple_mem_test": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "simple_test_hardcoded": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "edb603bb-3891-4d30-a571-fae84b6b6b80",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "wUsdKrREShFTyQl0",
+  "tags": []
+}

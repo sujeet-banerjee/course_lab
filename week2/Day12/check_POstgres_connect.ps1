@@ -1,0 +1,1 @@
+ docker exec -it postgres_db psql -U ai_user -d ai_database

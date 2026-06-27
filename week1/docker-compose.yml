@@ -1,0 +1,146 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------
+  # 1. THE ORCHESTRATOR: n8n
+  # ---------------------------------------------------------
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: course-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      # Pulled from your previous bash script context
+      - GENERIC_TIMEZONE=Asia/Kolkata
+      - TZ=Asia/Kolkata
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      # Tell n8n how it is accessed from the outside world
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - course-n8n_data:/home/node/.n8n
+    networks:
+      - course-ai_net
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 1G # Prevent n8n from eating Windows RAM
+
+  # ---------------------------------------------------------
+  # 2. THE LOCAL BRAIN: Custom Ollama (GHCR)
+  # ---------------------------------------------------------
+  #ollama:
+    #Replace the below string with your actual GHCR package URL
+    #image: ghcr.io/sujeet-banerjee/sentinel/sentinel-ollama-llama3:latest
+    #container_name: ollama
+    #ports:
+    #  - "11434:11434"
+    #volumes:
+    #  - course-ollama_data:/root/.ollama
+    #networks:
+    #  - course-ai_net
+    #restart: unless-stopped
+    # IMPORTANT: If you are on a machine with an NVIDIA GPU, uncomment below:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # ---------------------------------------------------------
+  # 3. PERSISTENT AGENT MEMORY: Redis with AOF
+  # ---------------------------------------------------------
+  redis:
+    image: redis:latest
+    container_name: course-redis_memory
+    # This command turns on Append Only File (AOF) for durability
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - course-redis_data:/data
+    networks:
+      - course-ai_net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # 4. THE RELATIONAL STORE: PostgreSQL (pgvector)
+  # ---------------------------------------------------------
+  postgres:
+    # I upgraded this to pgvector instead of vanilla postgres. 
+    # It acts as normal Postgres for n8n/metadata, but also allows 
+    # you to do SQL-based vector searches if you want to teach it!
+    image: pgvector/pgvector:pg15
+    container_name: course-postgres_db
+    environment:
+      - POSTGRES_USER=ai_user
+      - POSTGRES_PASSWORD=ai_password
+      - POSTGRES_DB=ai_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - course-postgres_data:/var/lib/postgresql/data
+    networks:
+      - course-ai_net
+    restart: unless-stopped
+
+  # ---------------------------------------------------------
+  # 5. RAG ENGINE: Qdrant Vector Database
+  # ---------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant
+    container_name: course-qdrant_vectordb
+    ports:
+      - "6333:6333" # REST API & Web UI (Show this to students!)
+      - "6334:6334" # gRPC
+    volumes:
+      - course-qdrant_data:/qdrant/storage
+    networks:
+      - course-ai_net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ---------------------------------------------------------
+  # 6. MLOps & OBSERVABILITY: LiteLLM Proxy
+  # ---------------------------------------------------------
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: course-litellm_proxy
+    ports:
+      - "4000:4000"
+    environment:
+      # Optional: Connects to Postgres to save usage logs & spend
+      - DATABASE_URL=postgresql://ai_user:ai_password@postgres:5432/ai_database
+    # UNCOMMENT AND UPDATE THESE LINES:
+    command: [ "--config", "/app/config.yaml", "--detailed_debug" ]
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    networks:
+      - course-ai_net
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+volumes:
+  course-n8n_data:
+  course-ollama_data:
+  course-redis_data:
+  course-postgres_data:
+  course-qdrant_data:
+
+networks:
+  # Putting them all on a custom bridge network allows them to resolve 
+  # each other by container_name (e.g., n8n can ping 'redis' directly)
+  course-ai_net:
+    driver: bridge

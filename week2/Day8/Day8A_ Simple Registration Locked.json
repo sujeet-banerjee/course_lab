@@ -1,0 +1,419 @@
+{
+  "name": "Day8A: Simple Registration Locked",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"name\": \"Sujeet\",\n  \"course\": \"AI Bootcamp\",\n  \"experience\": 20\n  \"time\": {{ $now }}\n}\n ",
+        "includeOtherFields": true,
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        -224
+      ],
+      "id": "fcff4938-9a89-4cf0-8298-9ca72a7c8477",
+      "name": "Create registration data",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -224
+      ],
+      "id": "3b7f0b4c-9ac6-445e-b477-0467b9b38e2d",
+      "name": "Trigger Registration",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  if(item.json.name == 'Sujeet') {\n    item.json.category = 'Trainer';\n  }\n  else if(item.json.experience >= 3) {\n    item.json.category = 'Experienced';\n    item.json.assigned_track = 'Track-A';\n  } else {\n    item.json.category = 'Beginner';\n    item.json.assigned_track = 'Track-B';\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -128
+      ],
+      "id": "d9091eba-13d9-4b6c-9643-f00068365180",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "869190d1-f6d3-49ff-ae14-541866dab521",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "32f48d9f-68b0-45b2-aefa-349d510731b3",
+              "name": "course",
+              "value": "={{ $json.course }}",
+              "type": "string"
+            },
+            {
+              "id": "02cf368b-f223-41ab-b18e-936f9b5c705f",
+              "name": "experience",
+              "value": "={{ $json.experience }}",
+              "type": "number"
+            },
+            {
+              "id": "3e86272b-069c-42fc-9a79-0964580480ba",
+              "name": "time",
+              "value": "={{ $json.time }}",
+              "type": "string"
+            },
+            {
+              "id": "e3139916-b1c1-498e-87ee-afb2d0c81cd1",
+              "name": "category",
+              "value": "Experienced",
+              "type": "string"
+            },
+            {
+              "id": "55298f86-2c45-4473-9926-93c97b1c8373",
+              "name": "assigned_track",
+              "value": "Track-A",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        -416
+      ],
+      "id": "ea84fc5a-2644-4dc8-8245-7b0d24439e86",
+      "name": "Set Experienced Learner",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3accee34-2c65-486c-9304-a814714bca44",
+              "leftValue": "={{ $json.experience }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        112,
+        -320
+      ],
+      "id": "4443c8a4-a089-40e6-9b07-a6c628053d1c",
+      "name": "check if Experienced",
+      "alwaysOutputData": false,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8e897318-2309-4487-9955-2a1a2df19e3c",
+              "leftValue": "={{ $('check if Experienced').item.json.name }}",
+              "rightValue": "Sujeet",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -416
+      ],
+      "id": "83681509-3a05-4ace-a996-09104ef97ac7",
+      "name": "Check if Trainer"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cadc8f7-0443-486d-a62f-51e8f9fea267",
+              "name": "category",
+              "value": "Trainer",
+              "type": "string"
+            },
+            {
+              "id": "dcf82d7e-229f-4da7-905c-80256e01cd0c",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "d5d824c4-de1a-49bc-8031-9d4f860c3aca",
+              "name": "course",
+              "value": "={{ $json.course }}",
+              "type": "string"
+            },
+            {
+              "id": "4a1d8c8a-3fc6-4377-b7f4-da932eb29065",
+              "name": "experience",
+              "value": "={{ $json.experience }}",
+              "type": "number"
+            },
+            {
+              "id": "f076a9d4-6a66-4937-8fd6-e008020b1aa8",
+              "name": "time",
+              "value": "={{ $json.time }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        -496
+      ],
+      "id": "1f721a71-8015-4e36-a836-b20c4b82546d",
+      "name": "Set Trainer",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1008,
+        -416
+      ],
+      "id": "5c8bbf78-4304-496a-b92b-433437cf5209",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "869190d1-f6d3-49ff-ae14-541866dab521",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "32f48d9f-68b0-45b2-aefa-349d510731b3",
+              "name": "course",
+              "value": "={{ $json.course }}",
+              "type": "string"
+            },
+            {
+              "id": "02cf368b-f223-41ab-b18e-936f9b5c705f",
+              "name": "experience",
+              "value": "={{ $json.experience }}",
+              "type": "number"
+            },
+            {
+              "id": "3e86272b-069c-42fc-9a79-0964580480ba",
+              "name": "time",
+              "value": "={{ $json.time }}",
+              "type": "string"
+            },
+            {
+              "id": "e3139916-b1c1-498e-87ee-afb2d0c81cd1",
+              "name": "category",
+              "value": "Beginner",
+              "type": "string"
+            },
+            {
+              "id": "c7694636-641e-4d30-8922-be73ee8a473c",
+              "name": "assigned_track",
+              "value": "Track-B",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        -208
+      ],
+      "id": "68c85f43-e41d-4ab8-9c0c-95e2e8ffb334",
+      "name": "Set Beginner",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n### Logic using No-Code and With-Code\nA simple registration process to depict various components of a workflow:\n- Nodes\n- Edges (execution and data flow)\n- Logic (using No-code as well as With-Code)\n\n### Data Transformation and Cleaning\n* **Flow Control** - If, then, else, looping, branching, merge, etc...\n* **Transform Data** - Add, remove fields, data, etc...\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 336,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -640
+      ],
+      "id": "5956666e-cbc3-4ee5-80bf-74d64de624af",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Registration": {
+      "main": [
+        [
+          {
+            "node": "Create registration data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create registration data": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "check if Experienced",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check if Experienced": {
+      "main": [
+        [
+          {
+            "node": "Set Experienced Learner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Beginner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Trainer": {
+      "main": [
+        [
+          {
+            "node": "Set Trainer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set Experienced Learner": {
+      "main": [
+        [
+          {
+            "node": "Check if Trainer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Trainer": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        []
+      ]
+    },
+    "Set Beginner": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b6b22582-c0ec-4539-a9a0-8bf5b5a7e85d",
+  "meta": {
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "0ca4oWyg4kbg4VCE",
+  "tags": []
+}

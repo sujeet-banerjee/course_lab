@@ -1,0 +1,1 @@
+Invoke-RestMethod -Uri "http://localhost:5678/webhook/weather" -Method POST -ContentType "application/json" -Body '{"city":"Bangalore"}'

@@ -1,0 +1,315 @@
+{
+  "name": "Day9A: Simple API Call Locked",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Objective\n### API Calls using No-Code and With-Code\nA simple registration process to depict various components of a workflow:\n- Nodes\n- Edges (execution and data flow)\n- Logic (using No-code as well as With-Code)\n- 'HTTP Request' node to make remote API calls\n- 'Web-Hook' node, as a REST API listener (endpoint)\n\n- Publish a workflow to Production\n\n### Data Transformation and Cleaning\n* **Processing API Response** There may be multiple API responses. Either use 'Merge Node' or 'Set/Edit Node' to collect the required fields.\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 336,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -736
+      ],
+      "id": "9c4a7f44-c0fd-4d7b-9ea2-c93a8b96d723",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -272
+      ],
+      "id": "646b5290-4e51-4853-9e83-81a8d7059a7a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weather",
+        "responseMode": "lastNode",
+        "options": {
+          "responseContentType": "application/json"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -48
+      ],
+      "id": "718216ea-5a34-40a0-9a6f-e938a708b18b",
+      "name": "Webhook",
+      "webhookId": "8a10852d-c250-4c70-b648-72636e1bcc11",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{ $json.body.city }}?format=j1",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $json.body.city }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -80,
+        -48
+      ],
+      "id": "eff03046-69f6-48d0-884e-a71ea7ce091b",
+      "name": "HTTP Request - For - Webhook"
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{$json.city}}?format=j1",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $json.city }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -80,
+        -272
+      ],
+      "id": "e6acea04-b51a-46fb-8eff-dd06016a0921",
+      "name": "HTTP Request - Mock Data",
+      "notesInFlow": true,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8f2c011-7ed1-4692-9c6d-504d330b29ef",
+              "name": "city",
+              "value": "={{ $('When clicking ‘Execute workflow’').item.json.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        -272
+      ],
+      "id": "f565b27e-799c-4a79-ba0f-5e4579dbb667",
+      "name": "Add City name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8f2c011-7ed1-4692-9c6d-504d330b29ef",
+              "name": "city",
+              "value": "={{ $('Webhook').item.json.body.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "3f2d215c-9ef5-437d-9e9e-40b36c78c6f9",
+      "name": "Add City Name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e224bb94-9551-45ed-86ab-1ff395e8b229",
+              "name": "humidity",
+              "value": "={{ $json.current_condition[0].humidity }}",
+              "type": "string"
+            },
+            {
+              "id": "b97b7595-c0fb-4f21-924d-c687afb72d38",
+              "name": "temperature",
+              "value": "={{ $json.current_condition[0].temp_C }}",
+              "type": "string"
+            },
+            {
+              "id": "c4a68d18-c1c4-435d-b57f-f4077340cf05",
+              "name": "condition",
+              "value": "={{ $json.current_condition[0].weatherDesc[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "08468351-3c04-491b-bdaf-af83dcfacf80",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        -256
+      ],
+      "id": "e36cab4c-9b4b-4490-aad6-3026381c5891",
+      "name": "Collect required fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nconst temp =\n  parseInt(\n    $input.first().json.temperature\n  );\n\nlet advice;\nif (temp > 35)\n{\n  advice = \"Stay indoors\";\n}\nelse if (temp > 25)\n{\n  advice = \"Carry water\";\n}\nelse\n{\n  advice = \"Enjoy the weather\";\n}\n\nfor (const item of $input.all()) {\n  item.json.advice = advice;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -256
+      ],
+      "id": "3b8fc04a-0275-4332-94d5-04ab975b88ec",
+      "name": "Give Advice - Using code logic"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "city": "Kanpur"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - For - Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - For - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Add City Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Add City name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add City name": {
+      "main": [
+        [
+          {
+            "node": "Collect required fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add City Name": {
+      "main": [
+        [
+          {
+            "node": "Collect required fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect required fields": {
+      "main": [
+        [
+          {
+            "node": "Give Advice - Using code logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "66280eae-9be7-472c-aa98-e1b49cbc7e05",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "Qp2koa7sdaAelkG4",
+  "tags": []
+}

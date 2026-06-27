@@ -1,0 +1,457 @@
+{
+  "name": "Day10A: Simple Agentic Invocation LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Objective\n### Rule-based versus Agentic\nA simple weather-advisor workflow. Intro to the agent components\n- Agent (AI) Node.\n- Model\n- User Prompt\n- System Prompt\n- Prompting basics\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 240,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        -832
+      ],
+      "id": "49f640fe-150e-4345-b949-9fad0a2a5876",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -768
+      ],
+      "id": "ac3e8bfe-fd40-4729-9318-a32895c72c3c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weather",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        -528
+      ],
+      "id": "59a339be-9554-4b47-ac33-41a32e3510cf",
+      "name": "Webhook",
+      "webhookId": "1befb2ed-6247-4f95-9353-6e2987c3ad6f",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{ $json.body.city }}?format=j1",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $json.body.city }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -480,
+        -528
+      ],
+      "id": "1f9f02ed-ca2d-4a35-a6c6-26a237be9067",
+      "name": "HTTP Request - For - Webhook"
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{$json.city}}?format=j1",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $json.city }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -272,
+        -768
+      ],
+      "id": "57e94ce5-0f55-49b1-a9c3-8eb0c6eadf7d",
+      "name": "HTTP Request - Mock Data",
+      "notesInFlow": true,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8f2c011-7ed1-4692-9c6d-504d330b29ef",
+              "name": "city",
+              "value": "={{ $('When clicking ‘Execute workflow’').item.json.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -64,
+        -768
+      ],
+      "id": "fc5f1541-96f0-4d5c-996a-b2f0043cd71c",
+      "name": "Add City name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c8f2c011-7ed1-4692-9c6d-504d330b29ef",
+              "name": "city",
+              "value": "={{ $('Webhook').item.json.body.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        -528
+      ],
+      "id": "d0f3f93a-6f90-4c68-8bee-b1bdc78553b6",
+      "name": "Add City Name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e224bb94-9551-45ed-86ab-1ff395e8b229",
+              "name": "humidity",
+              "value": "={{ $json.current_condition[0].humidity }}",
+              "type": "string"
+            },
+            {
+              "id": "b97b7595-c0fb-4f21-924d-c687afb72d38",
+              "name": "temperature",
+              "value": "={{ $json.current_condition[0].temp_C }}",
+              "type": "string"
+            },
+            {
+              "id": "c4a68d18-c1c4-435d-b57f-f4077340cf05",
+              "name": "condition",
+              "value": "={{ $json.current_condition[0].weatherDesc[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "08468351-3c04-491b-bdaf-af83dcfacf80",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "e0d5a99f-18cb-48c5-a4e0-a69f7d3d0a0e",
+              "name": "uv_index",
+              "value": "={{ $json.current_condition[0].uvIndex }}",
+              "type": "string"
+            },
+            {
+              "id": "5e3fc52a-6e88-4959-81f6-5cf5c97d5267",
+              "name": "wind_speed",
+              "value": "={{ $json.current_condition[0].windspeedKmph }}",
+              "type": "string"
+            },
+            {
+              "id": "b4d1a035-bcf5-4c38-b844-ebff55cfb3b1",
+              "name": "visibility",
+              "value": "={{ $json.current_condition[0].visibility }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -528
+      ],
+      "id": "aa528a5c-e89c-46a4-bed4-beff918956d9",
+      "name": "Collect required fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nconst temp =\n  parseInt(\n    $input.first().json.temperature\n  );\n\nlet advice;\nif (temp > 35)\n{\n  advice = \"Stay indoors\";\n}\nelse if (temp > 25)\n{\n  advice = \"Carry water\";\n}\nelse\n{\n  advice = \"Enjoy the weather\";\n}\n\nfor (const item of $input.all()) {\n  item.json.advice = advice;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -768
+      ],
+      "id": "386dd214-c5ad-4158-ac80-2d039b3c0905",
+      "name": "Give Advice - Using code logic"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -336
+      ],
+      "id": "b3d7c268-68ce-484e-895a-ae65e7a82a9b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Current weather:\n\nCity: {{$json.city}}\n\nTemperature: {{ $json.temperature }} °C\n\nHumidity: {{$json.humidity}} %\n\nWind Speed: {{$json.wind_speed}} km/h\n\nVisibility: {{$json.visibility}} km\n\nUV Index: {{$json.uv_index}}\n\nCondition: {{$json.condition}}",
+        "options": {
+          "systemMessage": "You are a weather advisory assistant.\n\nYour job is to analyse current weather conditions and produce\npractical advice for an ordinary person.\n\nConsider all available weather information, including:\n\n- temperature\n- humidity\n- wind speed\n- visibility\n- UV index\n- weather condition\n\nDo not simply repeat the weather.\n\nInstead provide:\n\n1. A one-sentence summary.\n2. Practical advice.\n3. Any precautions.\n4. Clothing recommendation.\n\nKeep the response concise (under 50 words). \n\nFor example:\nif weather conditions are extreme, you may simply summarize: \"stay at home\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        160,
+        -544
+      ],
+      "id": "f3cf7377-ed23-40e1-b359-1706142c44e8",
+      "name": "AI Agent For Weather-Advice"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e224bb94-9551-45ed-86ab-1ff395e8b229",
+              "name": "humidity",
+              "value": "={{ $json.current_condition[0].humidity }}",
+              "type": "string"
+            },
+            {
+              "id": "b97b7595-c0fb-4f21-924d-c687afb72d38",
+              "name": "temperature",
+              "value": "={{ $json.current_condition[0].temp_C }}",
+              "type": "string"
+            },
+            {
+              "id": "c4a68d18-c1c4-435d-b57f-f4077340cf05",
+              "name": "condition",
+              "value": "={{ $json.current_condition[0].weatherDesc[0].value }}",
+              "type": "string"
+            },
+            {
+              "id": "08468351-3c04-491b-bdaf-af83dcfacf80",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "e0d5a99f-18cb-48c5-a4e0-a69f7d3d0a0e",
+              "name": "uv_index",
+              "value": "={{ $json.current_condition[0].uvIndex }}",
+              "type": "string"
+            },
+            {
+              "id": "5e3fc52a-6e88-4959-81f6-5cf5c97d5267",
+              "name": "wind_speed",
+              "value": "={{ $json.current_condition[0].windspeedKmph }}",
+              "type": "string"
+            },
+            {
+              "id": "b4d1a035-bcf5-4c38-b844-ebff55cfb3b1",
+              "name": "visibility",
+              "value": "={{ $json.current_condition[0].visibility }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        -768
+      ],
+      "id": "d3805ec9-27e1-444a-bcc4-59e9deec1ca0",
+      "name": "Collect required fields - rule based"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "city": "Kanpur"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Mock Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - For - Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - For - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Add City Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Mock Data": {
+      "main": [
+        [
+          {
+            "node": "Add City name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add City name": {
+      "main": [
+        [
+          {
+            "node": "Collect required fields - rule based",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add City Name": {
+      "main": [
+        [
+          {
+            "node": "Collect required fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect required fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent For Weather-Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent For Weather-Advice",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect required fields - rule based": {
+      "main": [
+        [
+          {
+            "node": "Give Advice - Using code logic",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent For Weather-Advice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "66b8d2ce-6b53-4f33-8750-fda83c311138",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "1EzvHoTIf4jgvj5A",
+  "tags": []
+}
