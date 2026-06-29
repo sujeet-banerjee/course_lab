@@ -1,0 +1,91 @@
+
+### There's one behavior to point out during the class.
+
+Early in the log, before tool calling, the assistant says things like:
+
+"We already discussed the weather in Kanpur..."
+
+and
+
+"We've already done this calculation..."
+
+*** This is a useful teaching moment. ***
+
+The assistant is relying only on memory, not on fresh data. For weather, that's actually undesirable because weather changes. After tool calling is enabled, it instead says:
+
+"I've checked the current weather..." which is the correct behavior because it fetches live information.
+
+*** This leads nicely to an important design principle. ***
+
+Memory is not a cache
+-----------------------
+To tell the students:
+
+Some things should be remembered.
+
+Some things should always be refreshed.
+
+**** Good candidates for memory
+User name
+Preferences
+Favorite language
+Favorite city
+Previous requests
+Conversation context
+
+**** Bad candidates for memory
+Weather
+Stock prices
+Currency rates
+Current time
+Breaking news
+
+These should always invoke a tool.
+
+That distinction is exactly why agents have both memory and tools.
+
+
+
+
+=================================
+I would actually add one more demo
+
+Ask
+
+My favorite programming language is Python.
+
+Later
+
+What is my favorite programming language?
+
+↓
+
+Agent answers
+
+Python
+
+Perfect.
+
+Now ask
+
+What is the weather in Kanpur?
+
+twice.
+
+The first time
+
+↓
+
+HTTP Tool called.
+
+Five minutes later
+
+↓
+
+HTTP Tool called again.
+
+Then explain:
+
+The agent remembers that you asked, but doesn't remember the old weather as truth.
+
+This introduces the concept of ephemeral vs persistent knowledge.

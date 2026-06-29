@@ -1,0 +1,28 @@
+=============== Python
+## Py: create venv
+python -m venv myenv
+myenv\Scripts\activate
+deactivate
+
+=============== Github/Git:
+
+## Goal,Command
+Unstage a single file (Classic)
+	git reset HEAD <file-name>
+Unstage ALL files
+	git restore --staged . (or just git reset)
+Unstage a folder
+	git restore --staged <folder-name>/
+Interactive (unstage parts)
+	git restore -p
+
+
+## Command,Action (Label mgmt.)
+gh label list,See all current labels.
+gh label create <name>,Create a single label.
+gh label delete <name> --yes,Delete a specific label without the confirmation prompt.
+gh label edit <name> --name <new>,Change a label's name or color.
+gh label clone <repo>,Copy labels from another repo to the current one.
+
+
+

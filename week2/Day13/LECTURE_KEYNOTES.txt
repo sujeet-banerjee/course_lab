@@ -1,0 +1,93 @@
+============  Objective: Routing Agent and specialized agents ==========
+### Recall: day 12
+
+                    User
+                      │
+                      ▼
+                 One AI Agent
+        ┌─────────┬─────────┬─────────┐
+        │            │            │            │
+    Weather   Calculator   Time   Currency      |
+        │            │            │            │
+        └─────────┴─────────┴─────────┘
+
+
+ASK: 
+
+"What happens when tomorrow we add..."
+
+Stock Market
+Email
+SQL Database
+PDF Search
+HR Policies
+Company Knowledge
+CRM
+Calendar
+
+---- prompts bloats!!! ----
+You are an assistant.
+
+If weather...
+If finance...
+If sql...
+If email...
+If...
+If...
+If...
+------------
+
+>>> One agent handles all responsibilities ==> NOT SCALABLE!!
+
+
+*** This is a useful teaching moment. ***
+
+### DESIGN PRINCIPLE:
+1 agent ==> 1 responsibility
+
+Router Agent --> only decides and routes the query.
+Specialized agents --> they do the actual specialized work. --> Specialized prompts, and focused work! Also well defined boundary, easy to trace or debug!
+
+
+ASK: Does, Router agent need to be stateful (use the postgres memory)?  
+NO! (not usually)
+
+However, in the Enterprize, The Router can read memory. But it still doesn't update memory.
+WHy: say, the user asks a question "what is the weather there!". The router may want to extract 'there' from the history (but not in our demo usecase).
+
+
+*** Advantages
+
+Small prompts
+Independent set of teams (humans) can look into the production issues!
+Independent testing
+Easy maintenance
+Adding New specialists does not affect the other (working specialist) agents!
+Easy scaling
+
+
+*** Disadvantages
+
+Router mistakes
+More latency (multiple levels)
+More tokens (cost - benefit tradeoff)
+More workflows (can be managed using subflows)
+
+
+=================================
+Bonus (If Time Permits)
+
+Show how the architecture grows naturally:
+
+                   User
+                     │
+                     ▼
+              Supervisor Agent
+                     │
+          ┌──────────┴──────────┐
+          ▼                           ▼
+       Router Agent          Memory Service
+             │
+ ┌────────┼─────────┐
+ ▼          ▼            ▼
+Finance   Weather    Knowledge

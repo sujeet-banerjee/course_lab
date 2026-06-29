@@ -1,0 +1,664 @@
+{
+  "name": "Day13A:  Agent Patterns - Routing and Specialist Agents LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Objective\n**Day 13**\nLearning Objectives:\n- Why one large agent is difficult to maintain\n- Separation of concerns\n- Router pattern\n- Specialist agents\n- Agent delegation\n- Shared memory\n- Extensible agent architectures\n\n### Highlights\n- multiple Agents can share the same LLM.\n- The Context is owned by the agent (not the LLM), and the agent uses memory to maintain the state (conversation history)\n- The agents can use the same (shared) memory.\n\n#[Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 640,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2048,
+        -2064
+      ],
+      "id": "76184884-e353-4f9c-bbb2-c60aec5c93c8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        -944
+      ],
+      "id": "1d8fcd67-a99b-4acf-b722-4fff9c849947",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -1776
+      ],
+      "id": "ed9d1059-1bf8-4f37-ac95-9a9972646933",
+      "name": "Calculator Tool",
+      "notesInFlow": true,
+      "notes": "Perform arithmetic calculations.\n\nUse this tool whenever the user asks for:\n\naddition\n\nsubtraction\n\nmultiplication\n\ndivision\n\npercentage\n\nsquare root\n\nmathematical expressions."
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1072,
+        -944
+      ],
+      "id": "426bdbc9-86cb-4a00-8247-dac164f6268d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "oKAsFdLq1qQDPXS8",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -1808
+      ],
+      "id": "6381bf72-f171-4caf-a9cd-ec1e348c3e8f",
+      "name": "Time Tool"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Provide the currency exchange value from 'from_currency' to 'to_currency'. \n\nInputs required: from_currency and to_currency\n",
+        "url": "https://api.frankfurter.dev/v1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "base",
+              "value": "={{ $fromAI(     'from_currency',     'Three-letter source currency code such as USD, EUR, INR',     'string' )}}"
+            },
+            {
+              "name": "symbols",
+              "value": "={{ $fromAI(     'to_currency',     'Three-letter target currency code',     'string' )}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        48,
+        -1776
+      ],
+      "id": "8ca7d511-91af-49af-81ea-0504077072b9",
+      "name": "Exchange Tool"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.sessionId }}",
+        "tableName": "n8n_day13_chat_histories",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        -496,
+        -960
+      ],
+      "id": "5cb5b045-8b39-4bf7-9cfc-61327bc8f3de",
+      "name": "Postgres Chat Memory",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "ketEqaWL9VPs12IH",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "### Day 13\n```\n                 User\n                   │\n                   ▼\n             Router Agent\n         ┌─────────┼──────────┐\n         ▼         ▼          ▼\n  General Agent  Finance   Weather\n                   Agent     Agent\n         │         │          │\n         └─────────┴──────────┘\n                   │\n                   ▼\n             Shared Memory\n```",
+        "height": 400,
+        "width": 416
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        -2032
+      ],
+      "id": "18280cff-e3b8-4f7d-9770-d308b1f8bd2a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $json.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a routing agent.\n\nYour ONLY responsibility is deciding which specialist agent\nshould answer the question.\n\nAvailable specialists:\n\nweather\nfinance\ngeneral\n\nFinance includes:\n\n- date\n- time\n- duration\n- day of week\n- calculator\n- currency conversion\n- stock prices\n\n\nWeather includes:\n\n- temperature\n- humidity\n- forecast\n- rain\n- climate\n\nEverything else is general.\n\nReturn ONLY the valid String, that is one of \"weather\", \"finance\" or \"general\".\n\nExample:\n\"weather\"\n\nDo not explain.\n\nDo not answer the user's question.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1312,
+        -1488
+      ],
+      "id": "4037d125-ecb2-459d-bd0a-7b73ae8ea4fb",
+      "name": "Router Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "finance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b8983b64-6b76-46ee-81d1-ccf1e769b175"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a33ddabc-f0d6-4a1b-8eb3-d0830e24619a",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "weather",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e8d32798-61ce-4690-bd0b-0b9ec3f9d9e7",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "general",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -784,
+        -1504
+      ],
+      "id": "f9ef13fe-de71-4a6e-b529-fe9e1fce9d9a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('Webhook_chat_day13').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a finance assistant.\n\nYou answer:\n\ncurrency\ncalculator\nstock prices\ndate\ntime\nduration\nday of week\n\n\nAlways use the appropriate tool.\n\nNever estimate.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\n\n\n",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -160,
+        -1920
+      ],
+      "id": "3521a442-338a-4f8a-9276-6268d8864c8e",
+      "name": "finance"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('Edit Fields').item.json.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are the Weather Specialist.\n\nAlways use the Weather Tool.\n\nNever answer finance questions.\n\nNever answer calculator questions.\n\nWhen using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -176,
+        -1552
+      ],
+      "id": "5fe7dc21-b093-4b7a-8fc0-49fa2152231e",
+      "name": "weather"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Weather Tool: Retrieves the current weather for a city.\n\nUse this tool whenever the user asks about:\n\nweather\n\ntemperature\n\nhumidity\n\nforcast\n\nWeather advice\n\nrain\n\nclimate\n\nTOOL INPUT:\nThe input must be a json, with \"city\" field as mandatory, for example:\n  \n{\n \n\"city\": \n\"Bangalore\"\n}\n",
+        "method": "POST",
+        "url": "=http://localhost:5678/webhook/weather",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $fromAI('city', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        -1392
+      ],
+      "id": "6e163460-9e97-478d-b915-f95072fe6d17",
+      "name": "Weather tool"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('Webhook_chat_day13').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a helpful AI assistant.\n\nYour primary objective is to answer user query accurately. Additionally, the user may be interested in ongoing chat, so engage him appropriately\n\nYou have access to external tools.\n\nWhenever a tool can produce a more reliable answer than reasoning alone, use the tool.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nWeather\n→ Weather Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\nGeneral knowledge\n→ Answer directly.\n\nNever invent calculator results when a calculator tool is available.\n\nAlways use the most appropriate tool. \n\nIf using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body. \n\nAlways form an appropriate response from the tool output, without explicitly quoting the 'output from the HTTP_Request tool'",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -192,
+        -1152
+      ],
+      "id": "e8564b7c-feda-40f9-8e97-88c34245d4bc",
+      "name": "general"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smartquery",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "rawBody": false,
+          "responseCode": {
+            "values": {}
+          },
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "agents-used"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1904,
+        -1392
+      ],
+      "id": "1eae8d48-b529-482b-97cc-da4ae9d61252",
+      "name": "Webhook_chat_day13",
+      "webhookId": "13338f1d-0325-4c93-8341-4b81dafec78f",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "content": "## Troubleshooting\n\n**Use Set/Edit Node**\n- to normalize the variable names - userInput, sessionId (instead of using \n```{{ $('Webhook_chat_day13').item.json.body.sessionId }}```\n)\n- Once again, before the 'weather agent'",
+        "height": 256,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -2032
+      ],
+      "id": "5cbec64a-1202-47ca-81c4-8d1faa5ba2f0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f905ad36-ef6a-4243-861a-ebad705dfb17",
+              "name": "userMessage",
+              "value": "={{ $json.body.userMessage }}",
+              "type": "string"
+            },
+            {
+              "id": "f06efa68-5ba7-4629-85e3-aa2c5e780999",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1584,
+        -1392
+      ],
+      "id": "94502c49-6c36-4e83-a176-cc3fbab2f6d4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2604528-02c8-4636-8636-c6fdbbc0c71e",
+              "name": "sessionId",
+              "value": "={{ $('Edit Fields').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "d3f05bf2-b86c-4a73-a20f-179ac255f2aa",
+              "name": "userMessage",
+              "value": "={{ $('Edit Fields').item.json.userMessage }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        -1504
+      ],
+      "id": "b3f74d24-41dd-4afa-bf64-dd2159ab43f9",
+      "name": "Set Again Session Id"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "finance",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Router Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "weather",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "general",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "finance",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "finance",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "Router Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "weather",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "general",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Time Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "finance",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exchange Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "finance",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "finance",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "general",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "weather",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
+        []
+      ]
+    },
+    "Router Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "finance": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "finance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Again Session Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "general",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "weather",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_chat_day13": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Again Session Id": {
+      "main": [
+        [
+          {
+            "node": "weather",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8bab57c6-de15-4dad-ac24-a3f6bec011ab",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "k1QaRROKSXbJk9YD",
+  "tags": []
+}

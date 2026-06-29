@@ -1,0 +1,68 @@
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "Who am I? And what is the day today?", "sessionId": "ABC123"}'
+
+output
+------
+<function=Time_Tool>{"id":"call_8x6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y6y...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "how is the climate in Kanpur?", "sessionId": "ABC123"}'
+
+output
+------
+The climate in Kanpur is currently extremely hot with low humidity. Here are some key points:...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am Sujeet. How is the climate in Kanpur?", "sessionId": "ABC123"}'
+
+output
+------
+Nice to meet you, Sujeet. The climate in Kanpur is currently extremely hot with low humidity. Here are some key poin...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "Who am I? And what is the day today?", "sessionId": "ABC123"}'
+
+output
+------
+You are Sujeet. ...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "Recommend some good datascience cources.", "sessionId": "ABC123"}'
+
+output
+------
+Here are some highly-regarded data science courses you might find beneficial:...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "How much is 1300 USD in INR?", "sessionId": "ABC123"}'
+
+output
+------
+1300 USD is approximately **122,720 INR** based on the current exchange rate of 1 USD = 94.4 INR. If you have more q...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "How much is a USD in INR?", "sessionId": "ABC123"}'
+
+output
+------
+The current exchange rate is **1 USD = 94.4 INR**. If you need any more information, just let me know!
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "how much is 15*(5 + 15)", "sessionId": "ABC123"}'
+
+output
+------
+The result of the calculation \( 15 \times (5 + 15) \) is **300**. If you have any more questions or calculations, f...
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "Who am I? And what is the day today? And summarize our conversation for today", "sessionId": "ABC123"}'
+
+output
+------
+"You are Sujeet.\n\nAs for today's date, it is **October 5, 2023**.\n\n### Summary of Our Conversation:\n1. **Multiplication**: You asked about the multiplication of numbers, and I provided the result for several calculations.\n2. **Weather in Kanpur**: You inquired about the climate in Kanpur, and I provided details about the hot weather conditions.\n3. **Currency Conversion**: You asked about the exchange rate of USD to INR.\n4. **Data Science Courses**: I recommended several data science courses to enhance your learning.\n5. **Current Exchange Rate**: You asked how much 1 USD is in INR.\n6. **Calculations**: You requested the result for \\( 15 \\times (5 + 15) \\), and I provided that.\n  \nIf there's anything else you'd like to know or discuss, feel free to ask!"
+
+
+PS C:\Sujeet\showcase\course_lab\week2\Day13> Invoke-RestMethod -Uri "http://localhost:5678/webhook/smartquery" -Method POST -ContentType "application/json" -Body '{"userMessage": "Can you line-wise list the answers you gave today, and the correponsing tool used for each?", "sessionId": "ABC123"}'
+
+output
+------
+Here's a line-wise list of the answers I provided today, along with the corresponding tool used for each:...

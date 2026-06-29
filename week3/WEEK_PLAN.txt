@@ -1,0 +1,13 @@
+Week 2 was heavily n8n-focused, but Day 16 is fundamentally about understanding a machine learning concept. A Jupyter notebook is the right teaching tool here because students can see the vectors, cosine similarities, and clustering. Once they understand embeddings visually, moving back into n8n with Qdrant on Day 17 becomes much easier.
+
+Why I think this sequencing works well
+
+Your Week 3 now has a very logical progression that aligns with the original curriculum objectives.
+
+Day 15: Why traditional agents fail on enterprise knowledge.
+Day 16: How meaning is represented through embeddings.
+Day 17: Where those embeddings are stored (Qdrant).
+Day 18: How to retrieve the right chunks.
+Day 19: Assemble the complete RAG pipeline.
+Day 20: Evaluate retrieval quality with Ragas.
+Day 21: Build and demonstrate the Enterprise Knowledge Assistant.
