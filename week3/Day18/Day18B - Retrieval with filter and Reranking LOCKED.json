@@ -1,0 +1,425 @@
+{
+  "name": "Day18B - Retrieval with filter and Reranking LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -288
+      ],
+      "id": "62ccb410-277f-45ed-aad3-72ab26ec1f01",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "rPvHkNCLESvHtodB",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -288
+      ],
+      "id": "b3cfada0-84cc-401a-8143-7cc087602b5b",
+      "name": "Recursive Character Text Splitter",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "notes": "INput: text; \nOutput: chunked texts"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_metadata",
+                "value": "={{ $json.file_metadata }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        -448
+      ],
+      "id": "7f6db7a2-77c0-4d6a-9b2f-9ffb83595c9d",
+      "name": "Default Data Loader",
+      "notesInFlow": true,
+      "notes": "Set additional 'file_metadata'"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/policies/*.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -624,
+        -384
+      ],
+      "id": "f53b0624-7175-4d78-865a-787ea097e142",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -464,
+        -384
+      ],
+      "id": "3248f2e1-b119-49d1-af1d-fa11b111bf22",
+      "name": "Extract from File",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e39a5e62-832c-4ac8-bb92-3f50558cb018",
+              "name": "file_metadata",
+              "value": "={\n\"fileExtension\": \"{{ $json.fileExtension }}\",\n\"mimeType\": \"{{ $json.mimeType }}\",\n\"fileName\": \"{{ $json.fileName }}\",\n\"fileSize\": \"{{ $json.fileSize }}\",\n\"numpages\": \"{{ $json.numpages }}\",\n\n\"PDFFormatVersion\": \"{{ $json.info.PDFFormatVersion }}\",\n\n\"Author\": \"{{ $json.info.Author }}\",\n\"CreationDate\": \"{{ $json.info.CreationDate }}\",\n\"Title\": \"{{ $json.info.Title }}\"\n}\n",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        -384
+      ],
+      "id": "ab634e64-eab4-4972-8f71-a082eb8d060c",
+      "name": "Edit Fields",
+      "notesInFlow": true,
+      "notes": "Set metadata and text"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        -384
+      ],
+      "id": "00ef7dfd-de0f-4c86-b37e-b2f373b12c52",
+      "name": "Manual Trigger Ingestion",
+      "notesInFlow": true,
+      "notes": "‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "retrieval/rerank",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        -80
+      ],
+      "id": "f11c9921-59a6-4ec4-9998-ad60e01754d4",
+      "name": "Webhook",
+      "webhookId": "dd71f248-5f20-4915-a012-9cfe48021559"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "body.query, body.sessionId",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        -80
+      ],
+      "id": "cfc8ccfd-82ef-4a9f-a49c-79b7ee7dc483",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.document }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "74df99a8-c05c-4ab1-8699-0d94d6b3d1c3",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n* **Ingestion pipeline** (covering PDFs)\n   *  Metadata enrichment\n* **Retrieval** pipeline\n* **Understand** ( _not demoed_ )\n   * Causes of _Poor Retrieval_ - often Unclean data!\n   * Other chunking strategies\n        * Recursive Char-splitter\n        * Token based splitter\n        * Mark-down splitter\n        * Code syntax-aware splitter\n        * Page based chunking\n        * Parent-child chunking\n   * Other retrieval strategies\n        * Re-ranking\n        * MMR (Max Marginal Retriever)\n        * Metadata filtering\n        * Threshold filtering\n        * \n   * reranking\n\n\n**NOTE:** No Agents yet!",
+        "height": 256,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -640
+      ],
+      "id": "c172317d-fd6c-4496-9b21-4270e6f6bd78",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        -608
+      ],
+      "id": "98c54af0-8acc-49d4-94ec-596cf98e0712",
+      "name": "Qdrant Vector Store - INGESTION",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      },
+      "notes": "INGESTION"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "prompt": "={{ $json.query }}",
+        "topK": 8,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        -160
+      ],
+      "id": "2742b7ea-a274-43bd-8d4e-0fd6fee614e5",
+      "name": "Qdrant Vector Store - RETRIEVAL",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      },
+      "notes": "RETRIEVAL"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "88759862-3690-447e-bab6-d778bfed436c",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "aMCpU7cNNmxXjSU6",
+          "name": "Cohere account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store - RETRIEVAL": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "607c893b-f570-43e2-a1d8-23730e17e04a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "YlOECy4rqeSeyZIL",
+  "tags": []
+}

@@ -1,0 +1,7 @@
+
+- Boolean Logic basics (for no code)
+- REST APIs
+- JSON
+
+Optional:
+- Database basics (simple 'select * from table' type basic queries)

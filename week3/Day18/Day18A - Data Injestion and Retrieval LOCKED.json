@@ -1,0 +1,389 @@
+{
+  "name": "Day18A - Data Injestion and Retrieval LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        -608
+      ],
+      "id": "5e7d4b7d-6c91-4baa-b8e2-cb0e66ff6b24",
+      "name": "Qdrant Vector Store",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -256
+      ],
+      "id": "f325e9e7-5777-4ed6-8dec-e9b67b380aac",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "rPvHkNCLESvHtodB",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -256
+      ],
+      "id": "6669f533-80fc-451d-87c9-833df5792bcb",
+      "name": "Recursive Character Text Splitter",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "notes": "INput: text; \nOutput: chunked texts"
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "=file_metadata",
+                "value": "={{ $json.file_metadata }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        -464
+      ],
+      "id": "1d52f8ee-3ca0-40f5-b281-4cd4793a5484",
+      "name": "Default Data Loader",
+      "notesInFlow": true,
+      "notes": "Set additional 'file_metadata'"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/policies/*.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -592,
+        -384
+      ],
+      "id": "ad594296-815c-4627-8746-fb138ca45d51",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        -384
+      ],
+      "id": "f7ff8fa7-735d-46eb-a8b9-02535f972f3c",
+      "name": "Extract from File",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e39a5e62-832c-4ac8-bb92-3f50558cb018",
+              "name": "file_metadata",
+              "value": "={\n\"fileExtension\": \"{{ $json.fileExtension }}\",\n\"mimeType\": \"{{ $json.mimeType }}\",\n\"fileName\": \"{{ $json.fileName }}\",\n\"fileSize\": \"{{ $json.fileSize }}\",\n\"numpages\": \"{{ $json.numpages }}\",\n\n\"PDFFormatVersion\": \"{{ $json.info.PDFFormatVersion }}\",\n\n\"Author\": \"{{ $json.info.Author }}\",\n\"CreationDate\": \"{{ $json.info.CreationDate }}\",\n\"Title\": \"{{ $json.info.Title }}\"\n}\n",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -144,
+        -384
+      ],
+      "id": "62b3c554-1b83-49ce-a515-f2800a92e2ba",
+      "name": "Edit Fields",
+      "notesInFlow": true,
+      "notes": "Set metadata and text"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        -384
+      ],
+      "id": "9d792576-058d-4e98-a22c-202ca5c168f2",
+      "name": "Manual Trigger Ingestion",
+      "notesInFlow": true,
+      "notes": "‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "retrieval",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        -80
+      ],
+      "id": "c94ebbca-8ff4-400e-9b1a-c5d6f82d5fce",
+      "name": "Webhook",
+      "webhookId": "6609b9cc-841f-4216-8a35-65e887cf3ea8"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "body.query, body.sessionId",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        -80
+      ],
+      "id": "a71ebe86-e664-4faf-a852-b66541939956",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "prompt": "={{ $json.query }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        -176
+      ],
+      "id": "facf4c8b-006f-4794-8db1-5af1f0ed34a7",
+      "name": "Qdrant Vector Store1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.document }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "a45109ec-fbe7-448f-9b99-fb53fbe6513e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n* **Ingestion pipeline** (covering PDFs)\n* **Retrieval** pipeline\n* **Understand** ( _not demoed_ )\n   * Causes of _Poor Retrieval_ - often Unclean data!\n   * Other chunking strategies\n        * \n   * Other retrieval strategies\n   * reranking",
+        "height": 256,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -656
+      ],
+      "id": "e3dc17ef-587f-4ea3-a1f3-691c89b58f5d",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5c9f79e1-09b2-4ffc-b62b-b014122284aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "gsdnHoSWvjNodEWf",
+  "tags": []
+}

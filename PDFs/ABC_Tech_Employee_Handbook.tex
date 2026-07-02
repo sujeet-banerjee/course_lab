@@ -1,0 +1,100 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+% Color definitions for professional look
+\definecolor{primary}{RGB}{0, 76, 153}
+\definecolor{secondary}{RGB}{102, 102, 102}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=magenta,      
+    urlcolor=primary,
+}
+
+% Header and Footer setup
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{secondary}{ABC Technologies Pvt. Ltd.}}
+\fancyhead[R]{\textcolor{secondary}{Employee Handbook}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Section formatting
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primary}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{secondary}}{\thesubsection}{1em}{}
+
+\title{\vspace{-2cm}\textbf{\Huge Employee Handbook}\\[0.5cm] \Large ABC Technologies Pvt. Ltd.}
+\author{Mahua Banerjee}
+\date{July 1, 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\tableofcontents
+\newpage
+
+\section{Welcome to ABC Technologies Pvt. Ltd.}
+Welcome to ABC Technologies Pvt. Ltd. This handbook introduces our core employment policies, workplace expectations, and the resources available to support your success. It serves as a comprehensive guide to navigating your professional journey with us.
+
+\section{Employment Types \& Onboarding}
+\subsection{Categories}
+Employees may be classified into the following categories: Full-Time, Contract, Intern, or Consultant. Benefits and eligibility criteria vary by employment category. 
+\subsection{Probationary Period}
+All new Full-Time employees undergo a standard 90-day probationary period. During this time, performance and cultural fit are assessed to ensure mutual success.
+
+\section{Workplace Operations}
+\subsection{Working Hours}
+Standard office hours are Monday to Friday, 9:00 AM–6:00 PM (IST). Flexible hours may be approved by reporting managers, provided business continuity is maintained.
+\subsection{Hybrid Work Policy}
+Eligible employees may work from home up to three days per week with manager approval. Employees must remain available and responsive during core collaboration hours (10:30 AM–3:30 PM). Use of the company-approved corporate VPN is mandatory when accessing internal systems remotely.
+
+\section{Time Off and Leave Policy}
+Work-life balance is essential. Full-Time employees are entitled to the following annual leave allocations:
+\begin{itemize}[label=\textcolor{primary}{\textbullet}]
+    \item \textbf{Annual Leave:} 18 days. Requests should normally be submitted at least two weeks in advance via the HR portal.
+    \item \textbf{Medical Leave:} 10 days. A medical certificate may be required for absences exceeding 3 consecutive days.
+    \item \textbf{Casual Leave:} 5 days. Intended for unforeseen personal matters.
+\end{itemize}
+
+\section{Performance and Growth}
+\subsection{Performance Reviews}
+Performance reviews occur twice yearly (June and December). Evaluations are based on four core pillars: objective attainment, team collaboration, technical innovation, and customer impact.
+\subsection{Learning and Development}
+Every employee receives an annual training budget of \$1,500 (or local equivalent) and is actively encouraged to complete at least two technical or professional courses per year to maintain industry readiness.
+
+\section{Technology and Security}
+\subsection{Laptop Usage}
+Company laptops are corporate business assets. They may be taken home by hybrid or travelling employees. 
+\subsection{Data Protection}
+Strict adherence to data security is required. Sensitive, proprietary, or client information must not be copied to personal devices, unauthorized cloud storage, or external USB drives. Passwords must be rotated every 90 days.
+
+\section{Compensation and Benefits}
+\begin{itemize}[label=\textcolor{primary}{\textbullet}]
+    \item \textbf{Health Insurance:} Comprehensive coverage is provided for employees and up to three eligible dependents.
+    \item \textbf{Wellness Reimbursement:} A wellness stipend of \$500 is available once per calendar year for gym memberships, ergonomic home-office equipment, or mental health apps.
+\end{itemize}
+
+\section{Code of Conduct}
+We are committed to a safe, inclusive, and harassment-free workplace. Any violation of the code of conduct, including unauthorized data sharing, discrimination, or unprofessional behavior, will lead to disciplinary action up to and including termination.
+
+\section{Termination and Resignation}
+Voluntary resignations require a standard notice period of 30 days for Full-Time employees, unless dictated otherwise by local employment contracts. Upon exit, all physical and digital corporate assets must be immediately surrendered.
+
+\section{FAQs and Support}
+For any inquiries regarding these policies, questions should first be directed to your reporting manager or the Human Resources department via the internal ticketing system.
+
+\end{document}

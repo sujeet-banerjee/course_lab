@@ -1,0 +1,13 @@
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval" -Method POST -ContentType "application/json" -Body '{"query": "I am new joinee. How many leaves I am entitled to take in a year?", "sessionId": "ABC123"}' 
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "I am a new employee. Are there approvals need for official gifting etc?", "sessionId": "ABC123"}'
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "What is the VPN policy?", "sessionId": "ABC123"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is needed for iternational travel?", "sessionId": "ABC123"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is needed for domestic travel?", "sessionId": "ABC123"}'
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is needed for a personal village travel?", "sessionId": "ABC123"}'

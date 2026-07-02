@@ -1,0 +1,46 @@
+WORKFLOW:
+------------------
+
+Manual trigger --> R/W Files from disk --> Extract from file(pdf to text) --> 
+ 	Edit Fields (set metadata and text jsons) --> Qdrant Vector Store <>--> (Embeddings HF , Default Data Loader) 
+
+Default Data Loader (custom text-spitter) <>--> Recursive Character Text Splitter
+
+
+
+--------------------
+"Edit Fields" (FOR NESTED METADATA *** NOT NEEDED! KEEP IT FLAT!)
+
+Key: file_metadata
+Type: Object           <============= VERY IMPORTANT (else the json will be stringified!)
+Expression:
+{
+"fileExtension": "{{ $json.fileExtension }}",
+"mimeType": "{{ $json.mimeType }}",
+"fileName": "{{ $json.fileName }}",
+"fileSize": "{{ $json.fileSize }}",
+"numpages": "{{ $json.numpages }}",
+
+"PDFFormatVersion": "{{ $json.info.PDFFormatVersion }}",
+
+"Author": "{{ $json.info.Author }}",
+"CreationDate": "{{ $json.info.CreationDate }}",
+"Title": "{{ $json.info.Title }}"
+}
+
+
+----------------------
+"Recursive Character Text Splitter"
+chunk size = 500
+overlap = 100
+
+-------------------------
+------------------------
+DEMO NOTE[Default Data Loader]: If you do not explicitly set the "Metadata" in the "Default Data Loader" the metadata won't be set correctly
+
+DEMO NOTE[Qdrant Vector Store]: After above setting, you also need to specify the corresponding "metadata" and "text" mappings in the vector store, else you may see duplicate metadata nodes
+
+
+
+
+
