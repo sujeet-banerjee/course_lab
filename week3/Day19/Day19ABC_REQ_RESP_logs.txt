@@ -1,0 +1,18 @@
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval" -Method POST -ContentType "application/json" -Body '{"query": "I am new joinee. How many leaves I am entitled to take in a year?", "sessionId": "ABC123"}' 
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "I am a new employee. Are there approvals need for official gifting etc?", "sessionId": "ABC123"}'
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "What is the VPN policy?", "sessionId": "ABC123"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is needed for iternational travel?", "sessionId": "ABC123"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is needed for domestic travel?", "sessionId": "ABC123"}'
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/retrieval/rerank" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is needed for a personal village travel?", "sessionId": "ABC123"}'
+
+ Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/hr/qna" -Method POST -ContentType "application/json" -Body '{"query": "What is teh VPN policy on corporate resource access? Whose approval is needed for iternational travel? And, is there a VPN policy during iternational travel I need to adhere to?", "sessionId": "ABC123"}'
+
+>>  "response": 
+"Based on the provided context, here are the answers to your questions:\n\n1. **VPN policy on corporate resource access**: VPN must be used whenever accessing corporate resources from outside company offices.\n2. **Approval needed for international travel**: Vice President approval is required for international travel.\n3. **VPN policy during international travel**: Yes, you need to adhere to the VPN policy during international travel. You must use VPN whenever accessing corporate resources from outside company offices, which includes during international travel."

@@ -1,0 +1,16 @@
+{
+  "must":[
+      {
+        "key": "metadata.file_metadata.department",
+        "match": {
+          "any":  [
+"{{ $('Carry').item.json.department[0] }}",
+"{{ $('Carry').item.json.department[1] }}",
+"{{ $('Carry').item.json.department[2] }}",
+"{{ $('Carry').item.json.department[3] }}",
+"{{ $('Carry').item.json.department[4] }}"
+]
+        }
+      }
+    ]
+} 

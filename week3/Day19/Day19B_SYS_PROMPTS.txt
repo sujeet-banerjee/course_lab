@@ -1,0 +1,17 @@
+Question and Answer Chain
+==========================
+
+USER PROMPT
+---------------
+context: {context}
+Question:
+{{ $json.question }}
+
+
+
+System Prompt:
+--------------------------
+You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+----------------
+Context: {context}

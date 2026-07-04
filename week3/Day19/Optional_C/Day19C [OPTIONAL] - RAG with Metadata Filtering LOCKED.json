@@ -1,0 +1,590 @@
+{
+  "name": "Day19C [OPTIONAL] - RAG with Metadata Filtering LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        736,
+        -32
+      ],
+      "id": "f498e07a-c82d-499b-9145-168f1d7ce473",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "rPvHkNCLESvHtodB",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -192
+      ],
+      "id": "b352e231-7535-4c9c-89c5-1d49575b64e9",
+      "name": "Recursive Character Text Splitter",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "notes": "INput: text; \nOutput: chunked texts"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_metadata",
+                "value": "={{ $json.file_metadata }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        -368
+      ],
+      "id": "b44a0c6c-f3f1-4b09-bcab-14b642ac39b8",
+      "name": "Default Data Loader",
+      "notesInFlow": true,
+      "notes": "Set additional 'file_metadata'"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/policies/*.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -656,
+        -320
+      ],
+      "id": "477299ab-b63f-4687-8031-f10ac03e08e8",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        -320
+      ],
+      "id": "cc69363f-f8a0-40f3-870d-ed65586139b2",
+      "name": "Extract from File",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e39a5e62-832c-4ac8-bb92-3f50558cb018",
+              "name": "file_metadata",
+              "value": "={\n\"fileExtension\": \"{{ $json.fileExtension }}\",\n\"mimeType\": \"{{ $json.mimeType }}\",\n\"fileName\": \"{{ $json.fileName }}\",\n\"fileSize\": \"{{ $json.fileSize }}\",\n\"numpages\": \"{{ $json.numpages }}\",\n\n\"PDFFormatVersion\": \"{{ $json.info.PDFFormatVersion }}\",\n\n\"Author\": \"{{ $json.info.Author }}\",\n\"CreationDate\": \"{{ $json.info.CreationDate }}\",\n\"Title\": \"{{ $json.info.Title }}\"\n}\n",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        -320
+      ],
+      "id": "99f65da0-b511-4573-9ede-ec49cd416328",
+      "name": "Edit Fields",
+      "notesInFlow": true,
+      "notes": "Set metadata and text"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -320
+      ],
+      "id": "5a6ac5c0-e95a-4d28-8fb8-631ee4acf7ab",
+      "name": "Manual Trigger Ingestion",
+      "notesInFlow": true,
+      "notes": "‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hr/qna",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -848,
+        16
+      ],
+      "id": "4b9eb26a-0ef7-47cd-bae7-1cb6872c45c4",
+      "name": "Webhook",
+      "webhookId": "2869b85b-eddf-494c-b7a6-3628aac22eaa"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.document }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        336,
+        16
+      ],
+      "id": "a67499c0-22f5-40f9-ad76-9bc0e39005c1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n*  **RAG** with QnA-Chain, using the **Retriver** as a _tool_. That reduces manual steps of filtering.\n* **Metadata Filtering** - a more deterministic business based *Intent Classification*\n* Endpoint: [POST | http://localhost:5678/webhook-test/hr/qna]\n\n* **Caveats**:\n  * Needs code / lextra ogic to derieve the *Filter criteria* or the *Feature*\n   * If gone wrong, will exclude good chunks as well, effectively makung the **Recall** drop to zero!",
+        "height": 256,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        -624
+      ],
+      "id": "7c2b394f-e199-4cda-ab30-e7050dce4b4a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_rag_hr_enriched",
+          "mode": "list",
+          "cachedResultName": "mini_rag_hr_enriched"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        -544
+      ],
+      "id": "26438b89-059b-4f57-9ae3-08e47774a22d",
+      "name": "Qdrant Vector Store - INGESTION",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      },
+      "notes": "INGESTION"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        800,
+        240
+      ],
+      "id": "de26f993-541a-47d8-aecd-036d9b7678b5",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "aMCpU7cNNmxXjSU6",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        288
+      ],
+      "id": "507e8533-629e-435c-b291-00c6ae21d12c",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "49061986-80b3-4871-8bd7-6f302472d7ec",
+              "name": "question",
+              "value": "={{ $json.body.query}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "body.sessionId",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        16
+      ],
+      "id": "9ace2495-a527-4ba7-98f1-9ccc702aae76",
+      "name": "Set query and sessionId"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=context: {context}\nQuestion:\n{{ $json.question }}",
+        "options": {
+          "systemPromptTemplate": "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\nContext: {context}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.7,
+      "position": [
+        48,
+        16
+      ],
+      "id": "353d875e-c55e-423b-ae9c-fd441d9ba3a9",
+      "name": "Question and Answer Chain"
+    },
+    {
+      "parameters": {
+        "topK": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        240
+      ],
+      "id": "1b2997f3-0eac-4c37-82b5-877b820320cc",
+      "name": "Vector Store Retriever"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  if(item.json.file_metadata.fileName == 'Code_of_Conduct.pdf') {\n    item.json.file_metadata.department = 'Legal';\n  } else if (item.json.file_metadata.fileName == 'Employee_Handbook.pdf') {\n    item.json.file_metadata.department = 'HR';\n  } else if (item.json.file_metadata.fileName == 'IT_Security_Policy.pdf') {\n    item.json.file_metadata.department = 'Security';\n  } else if (item.json.file_metadata.fileName == 'Travel_Policy.pdf') {\n    item.json.file_metadata.department = 'Travel';\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -320
+      ],
+      "id": "3eba2f70-58c8-452e-a6ad-d4786436d006",
+      "name": "JS-Infer Department"
+    },
+    {
+      "parameters": {
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_rag_hr_enriched",
+          "mode": "list",
+          "cachedResultName": "mini_rag_hr_enriched"
+        },
+        "useReranker": true,
+        "options": {
+          "searchFilterJson": "={\n  \"must\":[\n      {\n        \"key\": \"metadata.file_metadata.department\",\n        \"match\": {\n          \"any\":  [\n\"{{ $('Carry').item.json.department[0] }}\",\n\"{{ $('Carry').item.json.department[1] }}\",\n\"{{ $('Carry').item.json.department[2] }}\",\n\"{{ $('Carry').item.json.department[3] }}\",\n\"{{ $('Carry').item.json.department[4] }}\"\n]\n        }\n      }\n    ]\n} "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        240
+      ],
+      "id": "1058e107-3ca0-4f3c-a269-1a9d8c46108a",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  const q = item.json.question.toLowerCase()\n  department = []\n  if (q.includes(\"travel\")) {\n    department.push('Travel')\n  }\n  if (q.includes(\"vpn\") || q.includes(\"laptop\")) {\n      department.push('Security')\n  }\n  if (q.includes(\"leave\")) {\n      department.push('HR')\n  }\n  if (q.includes(\"discrimination\") || \n      q.includes(\"harassment\")|| \n      q.includes(\"conflict\")|| \n      q.includes(\"gift\")|| \n      q.includes(\"confidentiality\")|| \n      q.includes(\"competitior\")) {\n      department.push('Legal')\n  }    \n  item.json.department = department;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        16
+      ],
+      "id": "9271a3c1-a0db-44f8-9e97-8484428aef30",
+      "name": "Infer Department"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        16
+      ],
+      "id": "46d6ca3c-4805-4b6e-bd22-8394c838ed7f",
+      "name": "Carry"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "JS-Infer Department",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set query and sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set query and sessionId": {
+      "main": [
+        [
+          {
+            "node": "Infer Department",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Retriever": {
+      "ai_retriever": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Question and Answer Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS-Infer Department": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Retriever",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Infer Department": {
+      "main": [
+        [
+          {
+            "node": "Carry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carry": {
+      "main": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8594fd82-8f6f-48a9-bb3c-6e601f5b089a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "qQiO8m5LQIkcZW7b",
+  "tags": []
+}

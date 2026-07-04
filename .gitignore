@@ -1,0 +1,13 @@
+# Ignore local database and volume data
+data/
+
+# Ignore Python environments and caches
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+venv/
+env/
+
+# Ignore actual environment variables (keep .env.example safe though!)
+.env
+**/.env

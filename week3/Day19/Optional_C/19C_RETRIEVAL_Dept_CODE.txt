@@ -1,0 +1,25 @@
+// Loop over input items and add a new field called 'myNewField' to the JSON of each one
+for (const item of $input.all()) {
+  const q = item.json.question.toLowerCase()
+  department = []
+  if (q.includes("travel")) {
+    department.push('Travel')
+  }
+  if (q.includes("vpn") || q.includes("laptop")) {
+      department.push('Security')
+  }
+  if (q.includes("leave")) {
+      department.push('HR')
+  }
+  if (q.includes("discrimination") || 
+      q.includes("harassment")|| 
+      q.includes("conflict")|| 
+      q.includes("gift")|| 
+      q.includes("confidentiality")|| 
+      q.includes("competitior")) {
+      department.push('Legal')
+  }    
+  item.json.department = department;
+}
+
+return $input.all();

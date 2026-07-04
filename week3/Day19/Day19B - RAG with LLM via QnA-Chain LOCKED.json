@@ -1,0 +1,515 @@
+{
+  "name": "Day19B - RAG with LLM via QnA-Chain LOCKED",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -160
+      ],
+      "id": "ade96110-3016-48e8-af1b-92e9c085fc4d",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "rPvHkNCLESvHtodB",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -224
+      ],
+      "id": "6a09fab4-a385-40d6-8720-692cd949140e",
+      "name": "Recursive Character Text Splitter",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "notes": "INput: text; \nOutput: chunked texts"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_metadata",
+                "value": "={{ $json.file_metadata }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -384
+      ],
+      "id": "34426685-3164-41d2-b58f-efde1d430837",
+      "name": "Default Data Loader",
+      "notesInFlow": true,
+      "notes": "Set additional 'file_metadata'"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/policies/*.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -656,
+        -320
+      ],
+      "id": "aa15365e-ef75-4cb6-975f-69f7a11235d7",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        -320
+      ],
+      "id": "c9dcf4ec-f7b0-448f-8b82-0cbd7d7e8e54",
+      "name": "Extract from File",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e39a5e62-832c-4ac8-bb92-3f50558cb018",
+              "name": "file_metadata",
+              "value": "={\n\"fileExtension\": \"{{ $json.fileExtension }}\",\n\"mimeType\": \"{{ $json.mimeType }}\",\n\"fileName\": \"{{ $json.fileName }}\",\n\"fileSize\": \"{{ $json.fileSize }}\",\n\"numpages\": \"{{ $json.numpages }}\",\n\n\"PDFFormatVersion\": \"{{ $json.info.PDFFormatVersion }}\",\n\n\"Author\": \"{{ $json.info.Author }}\",\n\"CreationDate\": \"{{ $json.info.CreationDate }}\",\n\"Title\": \"{{ $json.info.Title }}\"\n}\n",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        -320
+      ],
+      "id": "08d562b2-2f30-4d8d-9547-772e5cf7e51a",
+      "name": "Edit Fields",
+      "notesInFlow": true,
+      "notes": "Set metadata and text"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -320
+      ],
+      "id": "a4eaa188-6123-4bdc-b2d3-ac2c46502181",
+      "name": "Manual Trigger Ingestion",
+      "notesInFlow": true,
+      "notes": "‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hr/qna",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -848,
+        16
+      ],
+      "id": "3f8ef6ed-cd6b-40a1-8b09-7072d77cfd89",
+      "name": "Webhook",
+      "webhookId": "065e4943-b9ec-4e7f-93a1-2e4a0a19206c"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.document }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        16
+      ],
+      "id": "e3b20dc6-ca14-4d08-8688-8f239f7968ac",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n* TBD",
+        "height": 256,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -528
+      ],
+      "id": "c7e304ef-f266-48ba-ad2e-79d30e507204",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        -544
+      ],
+      "id": "b03ab8b0-e484-4fd8-a29d-b14acd8e8a99",
+      "name": "Qdrant Vector Store - INGESTION",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      },
+      "notes": "INGESTION"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        464,
+        192
+      ],
+      "id": "fab6faa1-9942-415f-ac87-6225826dd1be",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "aMCpU7cNNmxXjSU6",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        192
+      ],
+      "id": "2d54adaf-7ac7-4041-a4f3-d6bb827310ab",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "49061986-80b3-4871-8bd7-6f302472d7ec",
+              "name": "question",
+              "value": "={{ $json.body.query}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "body.sessionId",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        16
+      ],
+      "id": "db2325e1-0928-44a6-a133-36b8435dcdc4",
+      "name": "Set query and sessionId"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=context: {context}\nQuestion:\n{{ $json.question }}",
+        "options": {
+          "systemPromptTemplate": "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question.\nIf you don't know the answer, just say that you don't know, don't try to make up an answer.\n----------------\nContext: {context}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainRetrievalQa",
+      "typeVersion": 1.7,
+      "position": [
+        -368,
+        16
+      ],
+      "id": "b73be524-a61e-4ad9-8574-ee3f645c5ec3",
+      "name": "Question and Answer Chain"
+    },
+    {
+      "parameters": {
+        "topK": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.retrieverVectorStore",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        160
+      ],
+      "id": "1503ac5b-e566-4bad-aec6-b0834fa3222b",
+      "name": "Vector Store Retriever"
+    },
+    {
+      "parameters": {
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        176
+      ],
+      "id": "12194b2c-c271-48f4-9767-829ac776dc8b",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store - INGESTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger Ingestion": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set query and sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set query and sessionId": {
+      "main": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vector Store Retriever": {
+      "ai_retriever": [
+        [
+          {
+            "node": "Question and Answer Chain",
+            "type": "ai_retriever",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Vector Store Retriever",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Question and Answer Chain": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e46af8b5-a2d3-4f68-bdf9-01484817ef7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "Scr8DRj3ijKGknra",
+  "tags": []
+}

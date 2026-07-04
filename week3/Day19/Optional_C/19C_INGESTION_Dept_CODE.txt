@@ -1,0 +1,14 @@
+// Loop over input items and add a new field called 'myNewField' to the JSON of each one
+for (const item of $input.all()) {
+  if(item.json.file_metadata.fileName == 'Code_of_Conduct.pdf') {
+    item.json.file_metadata.department = 'Legal';
+  } else if (item.json.file_metadata.fileName == 'Employee_Handbook.pdf') {
+    item.json.file_metadata.department = 'HR';
+  } else if (item.json.file_metadata.fileName == 'IT_Security_Policy.pdf') {
+    item.json.file_metadata.department = 'Security';
+  } else if (item.json.file_metadata.fileName == 'Travel_Policy.pdf') {
+    item.json.file_metadata.department = 'Travel';
+  }
+}
+
+return $input.all();
