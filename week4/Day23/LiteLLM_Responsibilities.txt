@@ -1,0 +1,36 @@
+LiteLLM's Responsibilities
+--------------------------
+Not an LLM.
+
+Not a vector DB.
+
+Not an Agent.
+
+It performs:
+
+✔ Authentication
+
+✔ Provider abstraction
+
+✔ Model selection
+
+✔ Retry
+
+✔ Fallback
+
+✔ Logging
+
+✔ Cost accounting
+
+Later:
+
+✔ Observability
+
+
+Questions around LiteLLM
+--------------------------
+- What changed in n8n when switching providers?
+- Why is an OpenAI-compatible API valuable?
+- If Groq, Anthropic, or Azure OpenAI were added tomorrow, how much of the workflow would need to change?
+- How does LiteLLM reduce vendor lock-in?
+- What new capabilities does LiteLLM enable beyond provider abstraction?

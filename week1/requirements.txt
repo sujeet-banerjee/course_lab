@@ -18,6 +18,7 @@ streamlit
 
 matplotlib
 plotly
+openpyxl
 
 jupyter
 ipykernel

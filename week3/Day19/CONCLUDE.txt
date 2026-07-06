@@ -1,0 +1,8 @@
+Students should understand that retrieval is an optimization problem with competing objectives:
+
+Increase recall → retrieve more documents (top_k ↑).
+Increase precision → apply metadata filters and reranking.
+Minimize latency and cost → reduce the candidate set.
+Maintain robustness → avoid filters that are so strict they exclude the correct answer.
+
+That's the mindset architects use when designing RAG systems, and it's a much more enduring lesson than any particular workflow configuration.
