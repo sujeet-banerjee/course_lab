@@ -11,3 +11,4 @@ env/
 # Ignore actual environment variables (keep .env.example safe though!)
 .env
 **/.env
+**/.idea

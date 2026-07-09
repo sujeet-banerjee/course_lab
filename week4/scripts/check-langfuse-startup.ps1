@@ -1,0 +1,1 @@
+Invoke-RestMethod -Uri "http://localhost:3000/api/public/health" -Method GET

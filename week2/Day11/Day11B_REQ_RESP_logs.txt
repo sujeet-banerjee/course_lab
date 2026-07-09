@@ -1,0 +1,41 @@
+(venv) PS C:\Sujeet\showcase\course_lab\week4\scripts> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "Whose approval is required for international tavel?", "sessionId": "ABC123"}'
+
+output
+------
+<Calculator_Tool>{"input": "Whose approval is required for international travel?"}</Calculator_Tool>
+
+
+(venv) PS C:\Sujeet\showcase\course_lab\week4\scripts> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "calculat 2 raised to the power 3", "sessionId": "ABC123"}'
+
+output
+------
+The result of the calculation is 8.
+
+
+(venv) PS C:\Sujeet\showcase\course_lab\week4\scripts> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the weather in Kanpur?", "sessionId": "ABC123"}'
+
+output
+------
+The weather in Kanpur is expected to be partly cloudy with a high chance of light drizzle. It is recommended to carr...
+
+
+(venv) PS C:\Sujeet\showcase\course_lab\week4\scripts> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the weather in Jaipur?", "sessionId": "ABC123"}'
+
+
+output
+------
+The weather in Jaipur is expected to be hot and hazy with reduced visibility. It is recommended to stay hydrated, we...
+
+
+(venv) PS C:\Sujeet\showcase\course_lab\week4\scripts> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the weather in Jaipur? And how much is USD in INR?", "sessionId": "ABC123"}'
+
+output
+------
+The weather in Jaipur is expected to be hot and hazy, so it's recommended to stay hydrated and take breaks in shaded...
+
+
+(venv) PS C:\Sujeet\showcase\course_lab\week4\scripts> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What time is it right now?", "sessionId": "ABC123"}'
+
+output
+------
+The current time is 2026-07-07T19:55:02.010+05:30.

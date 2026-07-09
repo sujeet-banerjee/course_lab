@@ -56,6 +56,8 @@ However, in the Enterprize, The Router can read memory. But it still doesn't upd
 WHy: say, the user asks a question "what is the weather there!". The router may want to extract 'there' from the history (but not in our demo usecase).
 
 
+
+
 *** Advantages
 
 Small prompts
