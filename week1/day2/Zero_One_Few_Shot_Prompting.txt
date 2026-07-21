@@ -1,0 +1,107 @@
+PROMPT DEMO EXAMPLES
+--------------------
+Ollama settings: [
+        /clear
+	/set parameter num_predict 80
+        /set parameter temperature 0.1
+]
+** Same instruction - output depends on the persona assigned to the LLM.
+
+- Explain docker.
+- You are Shakespeare. Explain docker.
+- You are an expert architect. Explain docker to a junior engineer.
+- You are an expert architect. In not more than 40 words, explain docker to a junior engineer.
+
+
+PROMPTING TECHNIQUES (Day 2: Demo 1)
+---------------------
+
+====== ZERO SHOT ======
+Translate to French.
+
+Hello, how are you?
+
+
+==== ONE SHOT =========
+Input: Happy
+Output: Positive
+
+Input: Amazing
+Output:
+
+
+
+======== FEW SHOT =========
+
+Happy → Positive
+
+Amazing → Positive
+
+Terrible → Negative
+
+Worst → Negative
+
+Fantastic →
+
+
+
+========= Role based Prompting =========
+Ollama settings: [
+        /clear
+	/bye (restart)
+]
+
+
+
+Explain docker.
+---------------
+
+
+You are Shakespeare. Explain docker.
+------------------------------------
+
+
+
+You are an expert architect. Explain docker.
+-------------------------------------------
+
+
+
+
+*** Try all of those on Amazon's Rufus.
+
+
+
+PROMPT CLARITY
+--------------
+
+"Summarize this document."
+(VAGUE)
+
+--------------------
+"You are a legal analyst.
+
+Summarize this contract.
+
+Highlight
+
+• Risks
+
+• Obligations
+
+• Deadlines
+
+Maximum 5 bullets."
+
+----------------
+
+** A PROMPT should have:
+ROLE
+TASK
+CONTEXT
+CONSTRAINTS
+OUTPUT FORMAT
+
+
+
+

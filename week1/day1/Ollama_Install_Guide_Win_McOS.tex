@@ -1,0 +1,149 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[normalem]{ulem}
+
+\geometry{a4paper, margin=1in}
+
+\title{Ollama Installation and Maintenance Guide}
+\author{(C) Sujeet Banerjee}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{Overview}
+This guide installs Ollama and downloads the models used in the bootcamp: \texttt{llama3.2} (LLM) and \texttt{nomic-embed-text} (embedding model).
+
+\subsection*{System Requirements}
+
+\begin{enumerate}
+    \item Windows 10/11 or macOS 13+
+    \item 8 GB RAM minimum (16 GB recommended)
+    \item ~10 GB free disk space
+    \item Internet connection (to download models)
+    \item \sout{Docker Desktop is NOT required}
+    \item \sout{Python is NOT required for Day 1} 
+    \textit{(Required for Day2/Day3)}
+\end{enumerate}
+
+
+\section*{Windows 10/11}
+\begin{enumerate}
+    \item Visit \url{https://ollama.com/download/windows} and download the Windows installer.
+    \item Run the installer.
+    \item Open PowerShell or Command Prompt.
+    \item Verify installation:
+    \begin{verbatim}
+ollama --version
+    \end{verbatim}
+\end{enumerate}
+
+If successful, download the models:
+\begin{verbatim}
+ollama pull llama3.2
+ollama pull nomic-embed-text
+\end{verbatim}
+
+Run the LLM:
+\begin{verbatim}
+ollama run llama3.2
+\end{verbatim}
+
+\noindent The Ollama server normally listens on \url{http://localhost:11434}.
+
+\section*{macOS}
+\begin{enumerate}
+    \item Visit \url{https://ollama.com/download/mac} or install via Homebrew:
+    \begin{verbatim}
+brew install ollama
+    \end{verbatim}
+    \item Start Ollama (if needed):
+    \begin{verbatim}
+ollama serve
+    \end{verbatim}
+    \item Verify installation:
+    \begin{verbatim}
+ollama --version
+    \end{verbatim}
+\end{enumerate}
+
+Download the models:
+\begin{verbatim}
+ollama pull llama3.2
+ollama pull nomic-embed-text
+\end{verbatim}
+
+Run the LLM:
+\begin{verbatim}
+ollama run llama3.2
+\end{verbatim}
+
+\section*{Useful Commands}
+\begin{verbatim}
+ollama list              # List downloaded models
+ollama rm llama3.2       # Remove a model
+ollama show llama3.2     # Model information
+ollama serve             # Start server manually
+\end{verbatim}
+
+\section*{Change LLM Hyperparameters}
+From within Ollama CLI or Terminal:
+\begin{verbatim}
+  /?                               List available LLM commands
+  /set parameter ...               Set a (hyper)parameter
+  /set verbose                     Show LLM stats
+  /set quiet                       Disable LLM stats
+  /set think <high|medium|low>     Enable thinking
+  /set nothink                     Disable thinking
+  /set parameter num_ctx <int>          Set the context size
+  /set parameter temperature <float>    Set creativity level
+\end{verbatim}
+
+\section*{Troubleshooting}
+\begin{itemize}
+    \item Do not use Office-Laptop (certain ports might be blocked due to office compliance)
+    \item If 'ollama' is not recognized, restart the terminal after installation.
+    \item Firewall software may block \texttt{localhost:11434}.
+    \item Verify the server by opening \url{http://localhost:11434} in a browser; a simple response indicates the service is running.
+\end{itemize}
+
+\section*{Ollama Maintenance: Cleaning Up Local Logs, Memory, and Storage}
+
+To ensure Ollama runs smoothly without consuming unnecessary system resources, you can periodically clean up stale data, memory, and storage.
+
+\subsection*{1. Freeing Up Memory (RAM/VRAM)}
+When a model is running, it stays loaded in memory for a period of time (typically 5 minutes by default). To immediately unload the model and free up RAM/VRAM, run the \texttt{ollama stop} command:
+\begin{verbatim}
+ollama stop llama3.2
+\end{verbatim}
+Alternatively, you can restart the Ollama service or app to clear all loaded models from memory.
+
+\subsection*{2. Cleaning Up Model Storage (Disk Space)}
+Downloaded models can take up significant disk space. To remove a model you no longer need:
+\begin{verbatim}
+ollama rm <model_name>
+\end{verbatim}
+Example: \texttt{ollama rm llama3.2}
+
+\vspace{0.5em}
+\noindent\textbf{Manual Cache Deletion:}
+If you want to clear the entire model cache (or if \texttt{ollama rm} fails), you can delete the models directory directly:
+\begin{itemize}
+    \item \textbf{Windows:} Delete the contents of \texttt{C:\textbackslash Users\textbackslash <YourUsername>\textbackslash .ollama\textbackslash models}
+    \item \textbf{macOS:} Delete the contents of \texttt{\textasciitilde/.ollama/models}
+\end{itemize}
+
+\subsection*{3. Clearing Local Logs}
+Ollama generates logs that can grow over time.
+\begin{itemize}
+    \item \textbf{macOS:} The log files are usually located at \texttt{\textasciitilde/.ollama/logs/}. You can delete old log files in this directory to free up space.
+    \item \textbf{Windows:} Logs are typically found in \texttt{\%LOCALAPPDATA\%\textbackslash Ollama\textbackslash logs} or the \texttt{.ollama} directory.
+\end{itemize}
+
+\end{document}

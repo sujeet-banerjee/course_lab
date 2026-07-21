@@ -1,0 +1,30 @@
+ollama run llama3.2
+------- NOW RUN THESE BEFORE PROMPTING -----
+/set parameter num_predict 1
+/set parameter temperature 0.0
+/set quiet
+/clear
+
+-------------- NOW RUN THESE PROMPTS INTERATIVELY, AND RECORD THE RESPONSE ---------
+I am doing
+
+
+--------------
+The quick brown
+
+
+
+------------
+The robot learned
+
+
+------------
+Alexa: Ask roomba to 
+
+
+2, 7, 14, 23, 
+----------------
+
+------------- NOW, REPEAT THE ABOVE PROMPTS WITH CHANGED PARAMS ---------
+/set parameter num_predict 2
+/set parameter temperature 100.0

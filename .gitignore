@@ -12,3 +12,5 @@ env/
 .env
 **/.env
 **/.idea
+**/Recordings/*
+**/*.mp4

@@ -1,0 +1,151 @@
+\documentclass[12pt, a4paper]{article}
+
+% --- Packages ---
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+
+% --- Colors & Styling ---
+\definecolor{primarycolor}{RGB}{0, 83, 156}
+\definecolor{codebg}{RGB}{245, 245, 245}
+\definecolor{keywordcolor}{RGB}{0, 0, 255}
+\definecolor{stringcolor}{RGB}{163, 21, 21}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primarycolor,
+    urlcolor=primarycolor,
+    pdftitle={PyCharm \& Jupyter Setup Guide}
+}
+
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{lightgray},
+    keywordstyle=\color{keywordcolor}\bfseries,
+    stringstyle=\color{stringcolor},
+    showstringspaces=false,
+    xleftmargin=1em,
+    xrightmargin=1em,
+    aboveskip=1em,
+    belowskip=1em
+}
+
+% --- Header & Footer (Agreed Format) ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\textbf{ Sujeet Banerjee}}
+\fancyhead[L]{\textit{Data Science \& Gen AI}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% --- Title Format ---
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+\begin{center}
+    {\Huge \textbf{\color{primarycolor} PyCharm \& Jupyter Notebook}}\\[0.5em]
+    {\Large \textit{Installation and Virtual Environment Setup Guide}}\\[1.5em]
+\end{center}
+
+\section{Installing PyCharm for Data Science}
+
+PyCharm is a powerful IDE by JetBrains. For native, fully-featured Jupyter Notebook support, \textbf{PyCharm Professional} is highly recommended, though community plugins exist for the Community Edition.
+
+\begin{enumerate}
+    \item Navigate to the official JetBrains website: \url{https://www.jetbrains.com/pycharm/download/}
+    \item Download the installer for your operating system (Windows, macOS, or Linux).
+    \item Run the installer and follow the on-screen instructions.
+    \item Launch PyCharm and select \textbf{New Project}. Choose a directory for your workspace (e.g., \texttt{capstone-lab}).
+\end{enumerate}
+
+\section{Creating a Virtual Environment (venv)}
+
+A virtual environment isolates your project's dependencies from your global Python installation.
+
+\begin{enumerate}
+    \item install Python 3.x from (python.org), if not already present. The installation instructions are available at: [python.org]
+    \item Open the \textbf{Terminal} inside PyCharm (usually located at the bottom of the window, or accessible via \texttt{Alt + F12} / \texttt{Option + F12}).
+    \item Ensure you are in your project's root directory.
+    \item Run the following command to create a virtual environment named \texttt{venv}:
+\end{enumerate}
+
+\begin{lstlisting}[language=bash, title={Terminal - Create venv}]
+python -m venv venv
+\end{lstlisting}
+
+\begin{enumerate}
+    \setcounter{enumi}{3}
+    \item Activate the virtual environment. The command depends on your operating system:
+\end{enumerate}
+
+\textbf{For Windows (Command Prompt / PowerShell):}
+\begin{lstlisting}[language=bash]
+.\venv\Scripts\activate
+\end{lstlisting}
+
+\textbf{For macOS and Linux:}
+\begin{lstlisting}[language=bash]
+source venv/bin/activate
+\end{lstlisting}
+
+\textit{Note: You will know the environment is active when you see \texttt{(venv)} prepended to your terminal prompt.}
+
+\section{Installing Dependencies from requirements.txt}
+
+With your virtual environment active, you must install the required libraries (including Jupyter itself) using your \texttt{requirements.txt} file.
+
+\begin{enumerate}
+    \item Ensure your \texttt{requirements.txt} file is placed in the root of your project directory. 
+    \item Upgrade pip to the latest version (best practice):
+\begin{lstlisting}[language=bash]
+python -m pip install --upgrade pip
+\end{lstlisting}
+    \item Install the requirements:
+\begin{lstlisting}[language=bash]
+pip install -r requirements.txt
+\end{lstlisting}
+\end{enumerate}
+
+\begin{tcolorbox}[colback=yellow!10!white, colframe=orange!80!black, title=Crucial Requirement]
+To run notebooks, your \texttt{requirements.txt} \textbf{must} include the \texttt{jupyter} or \texttt{notebook} package. 
+\end{tcolorbox}
+
+\section{Configuring PyCharm to Execute .ipynb Files}
+
+Now that the environment is set up and dependencies are installed, you need to tell PyCharm to use this specific \texttt{venv} to run your notebooks.
+
+\subsection{Step 1: Set the Python Interpreter}
+\begin{enumerate}
+    \item Go to \textbf{File $\rightarrow$ Settings} (Windows) or \textbf{PyCharm $\rightarrow$ Settings} (macOS).
+    \item Navigate to \textbf{Project: [Your Project Name] $\rightarrow$ Python Interpreter}.
+    \item Click the \textbf{Add Interpreter} link or the gear icon, and select \textbf{Add Local Interpreter}.
+    \item Choose \textbf{Virtualenv Environment}, select \textbf{Existing environment}, and browse to the \texttt{python.exe} (Windows) or \texttt{python} (macOS/Linux) executable inside your newly created \texttt{venv} directory.
+    \item Click \textbf{Apply} and \textbf{OK}.
+\end{enumerate}
+
+\subsection{Step 2: Executing the Notebook}
+\begin{enumerate}
+    \item In the Project Explorer, right-click your project folder and select \textbf{New $\rightarrow$ Jupyter Notebook}. Name it (e.g., \texttt{analysis.ipynb}).
+    \item Open the \texttt{.ipynb} file. PyCharm will display its native notebook UI.
+    \item In the top right corner of the notebook editor, look for the \textbf{Jupyter Server} dropdown.
+    \item Select \textbf{Managed Server} (PyCharm will automatically start a local Jupyter server using your configured \texttt{venv} interpreter).
+    \item Type a test command in the first cell, such as:
+\begin{lstlisting}[language=Python]
+import pandas as pd
+print("Jupyter Notebook is running successfully!")
+\end{lstlisting}
+    \item Click the green \textbf{Play} button next to the cell or press \texttt{Shift + Enter} to execute the code. The output will appear directly beneath the cell.
+\end{enumerate}
+
+\end{document}

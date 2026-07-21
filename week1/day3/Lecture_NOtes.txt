@@ -1,0 +1,38 @@
+AI EVOL (RECAP)
+Slide 1: "how is AI implemented? Is it Hardware/Software/Firmware?"
+           (Mix: Eg: Google's TPUs, Broadcom+Apple recent $30 Billion AI-Chip making deal)
+Slide 2: Did ML replace Rule-based-intelligence (coded functions) completely? Did DL replace ML?
+           (Key: coexistence)
+Slide 3: If we had AI in 1990s, then why do you think we are seeing all the ChatGPTs, etc only now? Why did it take so long
+           (multiple things fueled: Advanced-Hardware (GPUs) + Cloud which brought computing access + NLP as the interface.
+
+Slide 4: "What's the difference between Automation and Autonomy? Is an LLM by itself autonomous?"
+ 	(rule-based, versus self-decision making capability based on the Environment/Surroundings)
+
+RECAP
+------
+   - High-level Overview of how LLM works
+   - LLM has two phases - Training and Inferencing.
+   - For Agentic system understanding we are more concerned with Inferencing.
+   - We learnt how inference-params effect the model behavior: temperature, max_tokens output, context-window 
+      (for details please go over the recordings)
+   - inferencing happens with predicting 1 token at a time (it's a DL prediction algorithm at a high-level)
+   - incr. temp ==> more open the LLMs becomes when considering the next-token candidates.
+   - Prompting styles - 0, 1, few shot prompting; 
+   - Role-based prompting (persona assignment, for guard-rails)
+   - open-ended instructions may not perform well compared to a well structured prompt.
+   - Guarded "System Prompt" that supersedes the "User Prompt" (Rufus)
+   - Today (day3) we'll see more about the agentic anatomy.
+
+Slide 1: CoT
+------------
+- Logical division of tasks into sub-tasks: step-by-step (sequential or parallel)
+- Reasoning: It's chain of cause and effect.
+- Example: how will you compute 2 * 3+4 * 5? 
+       --> say, Solve in two steps: 
+              STEP1: first multiply or divide, 
+              STEP2: second add the results obtained from previous step.
+- Breaking this is often a 'divide and conquer' strategy, and gives the AI better reasoning capability.
+- You are forcing the AI to think into logical steps - so it remove some level of non-determinism.
+
+         
