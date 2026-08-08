@@ -1,0 +1,19 @@
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook/weather" -Method POST -ContentType "application/json" -Body '{"city": "Kanpur"}'
+
+output
+------
+Summary: Expect a hot and humid day with scattered thunderstorms in the Kanpur area....
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook/weather" -Method POST -ContentType "application/json" -Body '{"city": "Telangana"}'
+
+output
+------
+**Summary:** A humid and rainy day in Telangana with moderate winds.\n\n**Practical Advice:** Carry an umbrella or raincoat to stay dry and consider wearing light, breathable clothing.\n\n**Precautions:** Avoid venturing out if possible, as visibility might be poor due to the patchy rain.\n\n**Clothing Recommendation:** Wear lightweight, quick-drying clothing and shoes with good grip to prevent slips on wet surfaces.
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook/weather" -Method POST -ContentType "application/json" -Body '{"city": "Rajasthan"}'
+
+output
+------
+"One of the hottest months in Rajasthan, stay hydrated and take precautions."\n\nPractical advice: \n- Drink plenty of water throughout the day.\n- Take breaks in shaded areas.\n\nPrecautions: Avoid strenuous activities during peak sun hours (10 am - 4 pm).\n\nClothing recommendation: Wear lightweight, light-colored, loose-fitting cotton clothes.

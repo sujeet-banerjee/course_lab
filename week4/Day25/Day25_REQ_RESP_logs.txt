@@ -1,0 +1,76 @@
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am new joinee. How many leaves I am entitled to take in a year?", "sessionId": "ABC123"}'
+
+answer
+------
+As a new joinee, you are entitled to the following annual leave allocations:...
+
+============================
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am new joinee. How many leaves I am entitled to take in a year? What is 10 added to the numer of leaves?", "sessionId": "ABC123"}'
+
+answer
+------
+As a new joinee, you are entitled to the following annual leave allocations:...
+
+
+
+=========================
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am new joinee. what is 23 + 11?", "sessionId": "ABC123"}'
+
+output
+------
+The result of the calculation 23 + 11 is **34**.
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am new joinee. what is the weather in Kanpur right now?", "sessionId": "ABC123"}'
+
+output
+------
+The weather in Kanpur is hot and humid with thundery outbreaks in nearby areas. It is recommended to stay hydrated, ...
+
+
+========================
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am new joinee. How many leaves I am entitled to take in a year?", "sessionId": "ABC123"}'
+
+answer
+------
+As a new joinee, you are entitled to the following annual leave allocations:...
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "What is the weather in Rajasthan right now?", "sessionId": "ABC123"}'
+
+answer
+------
+The weather in Rajasthan is warm and relatively clear. It's advisable to stay hydrated and take breaks in shaded are...
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "What is Cirrus constellation?", "sessionId": "ABC123"}'
+
+answer
+------
+There is no constellation named "Cirrus." You might be thinking of "Circinus," which is a small and faint constellat...
+
+
+
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "What time is it right now?", "sessionId": "ABC123"}'
+
+answer                              question                   sessionId
+------                              --------                   ---------
+The current time is 12:05 AM (IST). What time is it right now? ABC123
+
+
+===========================
+
+PS C:\Sujeet\showcase\agentic-crew> Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage": "I am new joinee. Whose approval do I need for domestic office travel? And international travel?", "sessionId": "ABC123"}'
+
+answer                                                                                                             cont
+                                                                                                                   ext
+------                                                                                                             ----
+For domestic office travel, you need manager approval. For international travel, you need Vice President approval. {...
+
+
+
+

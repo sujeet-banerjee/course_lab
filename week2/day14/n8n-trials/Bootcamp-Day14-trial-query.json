@@ -1,0 +1,532 @@
+{
+  "name": "Bootcamp-Day14-trial-query",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        208
+      ],
+      "id": "09f6fcb7-8b56-4b0d-9ec8-67c0f76a9f71",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        912,
+        -352
+      ],
+      "id": "6b9f7223-201d-4d46-ac8a-c6c58f7f70c8",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smartqa",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -880,
+        -368
+      ],
+      "id": "a94b329f-cf89-40a9-a3ca-3263d7cfc321",
+      "name": "ChatWebhook",
+      "webhookId": "ff7c3ade-8ad2-4aab-9aab-c262ff35a37c"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to fetch the current date and time. You can expect the output in the field currentDate.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -352
+      ],
+      "id": "18c5e774-98c9-4816-bc21-b846aab6095a",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Weather Tool: Retrieves the current weather for a city.\n\nUse this tool whenever the user asks about:\n\nweather, temperature, humidity, forcast, Weather advice, rain, climate\n\nTOOL INPUT:\nThe input must be a json, with \"city\" field as mandatory, for example:\n  \n{\n \n\"city\": \"Bangalore\"\n}\n",
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/weather2",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $fromAI('city', `supply the city field`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        864,
+        -96
+      ],
+      "id": "f542638f-bebd-4daf-83c8-ca69caca4d46",
+      "name": "Weather Tool"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('ChatWebhook').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are the Weather Specialist.\n\nAlways use the Weather Tool.\n\nNever answer finance questions.\n\nNever answer calculator questions. \n\nWhen using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body.\n \nEnsure you definitely answer weather questions.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        336,
+        -288
+      ],
+      "id": "f657bfa9-5179-441c-b141-3b8bca1afe19",
+      "name": "weather agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('ChatWebhook').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a finance assistant.\n\nYou answer:\n\ncurrency\ncalculator\nstock prices\ndate\ntime\nduration\nday of week\n\n\nAlways use the appropriate tool.\n\nNever estimate.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        -512
+      ],
+      "id": "32d49b14-7fcd-41d6-ac3c-77f9bab26019",
+      "name": "Finance Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $json.body.userMessage }}",
+        "options": {
+          "systemMessage": "You are a routing agent.\n\nYour ONLY responsibility is deciding which specialist agent\nshould answer the question.\n\nAvailable specialists:\n\nweather\nfinance\ngeneral\n\nFinance includes:\n\n- date\n- time\n- duration\n- day of week\n- calculator\n- currency conversion\n- stock prices\n\n\nWeather includes:\n\n- temperature\n- humidity\n- forecast\n- rain\n- climate\n\nEverything else is general.\n\nReturn ONLY the valid String, that is one of \"weather\", \"finance\" or \"general\". And Return only one of the three outputs.\n\nExample:\n\"weather\"\n\nDo not explain.\n\nDo not answer the user's question."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -656,
+        -368
+      ],
+      "id": "30cf6655-a234-4161-bef1-d4caffdbaaeb",
+      "name": "Router Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "finance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "58a8ac01-769a-443e-920e-b9760f465a50"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e79af83b-775f-43d6-b540-5d08b3691761",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "weather",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7393d4a3-8458-462d-9654-2de9b9207d09",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "general",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -320,
+        -384
+      ],
+      "id": "cebe8fd5-bed3-4095-bb23-cb94f88e2cf2",
+      "name": "Switch",
+      "notesInFlow": true,
+      "notes": "Switch to Spec. Agents\n\n0 --> finance\n1 -->  weather\n2 --> general"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('ChatWebhook').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a helpful AI assistant.\n\nYour primary objective is to answer user query accurately.\n\nAlways form an appropriate response."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "2186e8b7-83ac-4b1d-b4b2-4f315be43737",
+      "name": "General Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 10,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        16
+      ],
+      "id": "e07d59e1-615d-4ad1-835b-b0040ef53458",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('ChatWebhook').item.json.body.sessionId }}",
+        "tableName": "n8n_chat_histories_day14_G",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        976,
+        256
+      ],
+      "id": "d689c040-453d-452b-8e25-258b016d95ce",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "VjlcRyuvDpgUETbc",
+          "name": "chat_mem_day12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "f9f62cc1-44ee-40b4-bbe1-f2b809dbb59d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "oKAsFdLq1qQDPXS8",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b919278d-23bc-44ed-a14b-e4d6e8407275",
+              "name": "sessionId",
+              "value": "={{ $('ChatWebhook').item.json.body.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -368
+      ],
+      "id": "976bc3eb-d7c3-4318-b591-2a064ef22e37",
+      "name": "resetSessionId"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "weather agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "General Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatWebhook": {
+      "main": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "weather agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "resetSessionId",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "General Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "General Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "weather agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "weather agent",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "General Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "resetSessionId": {
+      "main": [
+        [
+          {
+            "node": "weather agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2d7c7e07-e7d4-4138-8761-c35417dae4fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "6ZRQiht3SsWFJpyV",
+  "tags": []
+}

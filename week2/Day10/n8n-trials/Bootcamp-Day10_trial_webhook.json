@@ -1,0 +1,208 @@
+{
+  "name": "Bootcamp-Day10_trial_webhook",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -160
+      ],
+      "id": "dbc04dff-5307-4185-a95c-4a6a621f9967",
+      "name": "Test"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weather2",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        0
+      ],
+      "id": "d459f954-90c5-464f-87fc-218e58a313e2",
+      "name": "fromChat",
+      "webhookId": "b1028875-5093-4b7a-a51c-b6f54684db10"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://wttr.in/{{ $json.body.city }}?format=j1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -368,
+        -144
+      ],
+      "id": "9c5ad449-0ae7-4a33-87aa-e0eb4053bda6",
+      "name": "HTTP weather external"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4cd91cac-07a4-4da1-97a9-57d78406d284",
+              "name": "city",
+              "value": "={{ $('fromChat').item.json.body.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "current_condition[0].humidity, current_condition[0].pressure, current_condition[0].temp_C, current_condition[0].visibility, current_condition[0].weatherDesc[0].value, current_condition[0].uvIndex, current_condition[0].windspeedKmph",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -144
+      ],
+      "id": "7e627173-418b-4652-8da3-4b20cf7e3728",
+      "name": "Set the city"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n    let tempterature = parseInt(item.json.temp_C)\n    if (tempterature > 35) {\n       item.json.advice = 'Stay indoors.';\n    } else if (tempterature > 25) {\n       item.json.advice = 'Carry water bottle';\n    } else {\n       item.json.advice = 'Enjoy weather!';\n    }\n    \n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -304
+      ],
+      "id": "cb7780e9-e230-4be3-a3ae-6a1935777060",
+      "name": "generate advice",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Current weather:\n\nCity: {{$json.city}}\n\nTemperature: {{ $json.temp_C }} °C\n\nHumidity: {{$json.humidity}} %\n\nWind Speed: {{$json.windspeedKmph}} km/h\n\nVisibility: {{$json.visibility}} km\n\nUV Index: {{ $json.uvIndex }}\n\nCondition: {{ $json.value }}",
+        "options": {
+          "systemMessage": "You are a weather advisory assistant.\n\nYour job is to analyse current weather conditions and produce\npractical advice for an ordinary person.\n\nConsider all available weather information, including:\n\n- temperature\n- humidity\n- wind speed\n- visibility\n- UV index\n- weather condition\n\nDo not simply repeat the weather.\n\nInstead provide:\n\n1. A one-sentence summary.\n2. Practical advice.\n3. Any precautions.\n4. Clothing recommendation.\n\nKeep the response concise (under 120 words). \n\nFor example:\nif weather conditions are extreme, you may simply summarize: \"stay at home\". However, for high UV Index, always warn in addition!\n\nRespond with error, if the field 'city' is not specified in the input, with appropriate message, indicating 'to specify \"city\" field in the json input'"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        64,
+        -144
+      ],
+      "id": "d12df16d-5aa3-45a9-991c-bcfb4f000fd9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        112
+      ],
+      "id": "a2ad80a3-4c2a-4b95-9567-5db108298360",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "N91j24juoOIeGahd",
+          "name": "LOCKED Groq account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Test": {
+      "main": [
+        []
+      ]
+    },
+    "fromChat": {
+      "main": [
+        [
+          {
+            "node": "HTTP weather external",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP weather external": {
+      "main": [
+        [
+          {
+            "node": "Set the city",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the city": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9b0f5a62-18a4-4133-8c9f-581b6677945e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "F15ynJMhMDrNzCw0",
+  "tags": []
+}

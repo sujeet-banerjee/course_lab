@@ -1,0 +1,188 @@
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/weather" -Method POST -ContentType "application/json" -Body '{"city":"Bangalore"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook/weather2" -Method POST -ContentType "application/json" -Body '{"city":"Bangalore"}'
+
+
+
+=============== Prompt ================
+USER:
+-----
+Current weather:
+
+City: {{$json.city}}
+
+Temperature: {{ $json.temperature }} °C
+
+Humidity: {{$json.humidity}} %
+
+Wind Speed: {{$json.wind_speed}} km/h
+
+Visibility: {{$json.visibility}} km
+
+UV Index: {{$json.uv_index}}
+
+Condition: {{$json.condition}}
+---------------------------
+
+
+SYSTEM:
+-----
+You are a weather advisory assistant.
+
+Your job is to analyse current weather conditions and produce
+practical advice for an ordinary person.
+
+Consider all available weather information, including:
+
+- temperature
+- humidity
+- wind speed
+- visibility
+- UV index
+- weather condition
+
+Do not simply repeat the weather.
+
+Instead provide:
+
+1. A one-sentence summary.
+2. Practical advice.
+3. Any precautions.
+4. Clothing recommendation.
+
+Keep the response concise (under 120 words). 
+
+For example:
+if weather conditions are extreme, you may simply summarize: "stay at home". However, for high UV Index, always warn in addition!
+
+Respond with error, if the field 'city' is not specified in the input, with appropriate message, indicating 'to specify "city" field in the json input'
+
+
+====================================================
+
+
+Calculator
+==========
+
+Input:
+
+
+{
+"name": 
+"Calculate",
+  
+"expression": 
+"987654 × 123456"
+}
+
+
+User Prompt: 
+------
+operation: {{ $json.name }}
+expression: {{ $json.expression }}
+--------
+
+System Prompt
+------------
+You are an expert mathematical calculator. 
+
+For the given operation and expression calculate the result, and report it. 
+
+Do not trim or round the result of the calculation in any way. 
+Do not give any explanation, just give the answer after calculation.
+
+
+
+=========================================
+
+INTRO TO THE CHAT 
+------------------
+
+
+User_prompt:
+-------
+user query: {{ $json.body.query }}
+
+System Prompt:
+------------
+You are a helpful AI assistant.
+
+Your primary objective is to answer user query accurately.
+
+You have access to external tools.
+
+Whenever a tool can produce a more reliable answer than reasoning alone, use the tool.
+
+Examples:
+
+Arithmetic
+→ Calculator Tool
+
+General knowledge
+→ Answer directly.
+
+Never invent calculator results when a calculator tool is available.
+
+Always use the most appropriate tool. 
+
+Always form an appropriate response from the tool output.
+
+
+--------- Sys Prompt Adendum -----
+
+Current date/time
+→ Time Tool
+
+Currency / Exchange rates
+-> Exchange Tool
+
+.........
+
+Weather
+→ Weather Tool
+
+....................
+
+If using weather tool, extract the city from the query, and pass it as "city" json field in the request body. 
+
+Always form an appropriate response from the tool output, without explicitly quoting the 'output from the HTTP_Request tool'
+
+
+---------------
+
+
+Weather Tool (WEB-Tool)
+
+POST: http://localhost:5678/webhook/weather
+(send body) (JSON) (Using fields below)
+Name: city
+Value: <CLICK 'from AI'> 
+{{ $fromAI('city', `Extract city from the user query`, 'string') }}
+
+
+
+USER CHAT QUERY
+==============
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "Calculate 987654 * 123456"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the time right now?"}'
+
+....................
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the weather in Kanpur?"}'
+
+output
+------
+The weather in Kanpur is expected to be partly cloudy with a high chance of light drizzle. It is recommended to carr...
+
+
+.................
+
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the weather in Jaipur?", "sessionId": "ABC123"}'
+

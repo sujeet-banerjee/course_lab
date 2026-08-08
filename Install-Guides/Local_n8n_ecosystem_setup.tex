@@ -1,0 +1,268 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegray},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,                    
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Install Guide: Agentic Ecosystem Setup}
+\fancyhead[R]{sujeet.banerjee.professional@gmail.com 
+\\ sujeet.banerjee@gmail.com}
+\fancyfoot[R]{\thepage}
+
+\title{\textbf{ [OPTIONAL] Local Deployment of N8N Agentic Ecosystem}\\ 
+\large \textit{Configuration Guide: Containerized N8N, \\ 
+Qdrant, LiteLLM, Redis, PGSql, ...} }
+\author{(Windows \& macOS)}
+
+\begin{document}
+
+\maketitle
+
+\section*{WARNING/DISCLAIMER}
+\textit{Please Note: These instructions are compiled based on what works on most of the High-end laptops/systems, including (but not limited to) 16GB RAM, ~1TB DiskSpace, etc. However, please be advised that the instructions are for self-help and self-exploratory purposes, and there is no guaranty that the software discussed in this document will work hassle-free. For example, the installations may cause the laptop/device to slow down drastically, and/or bestow unwarranted results due to the open-source nature of the softwares. Please ensure adequate backups of your system before following this guide and at your own risk.}
+
+\section*{ALTERNATIVE}
+\textit{Please Note: Use of this install guide is \textbf{COMPLETELY OPTIONAL}. As an alternative, please use online / cloud subscriptions of N8N, Postgres, etc. }
+
+\tableofcontents
+\newpage
+
+\section{Introduction \& Ecosystem Architecture}
+This guide provides step-by-step instructions for deploying a comprehensive agentic AI ecosystem on a single laptop. The stack leverages Docker Compose to orchestrate multiple services efficiently without conflicting with host operations.
+
+\textbf{Core Components:}
+\begin{itemize}
+    \item \textbf{n8n (Port 5678):} The orchestrator and primary workflow engine for designing agentic pathways.
+    \item \textbf{Qdrant (Ports 6333, 6334):} A high-performance vector database for Retrieval-Augmented Generation (RAG).
+    \item \textbf{LiteLLM Proxy (Port 4000):} Unified interface for routing API calls to underlying LLMs and logging metadata to Langfuse.
+    \item \textbf{PostgreSQL (Port 5432):} Relational database used for n8n memory persistence and LiteLLM routing rules.
+\end{itemize}
+
+\section{System Prerequisites}
+To ensure smooth operation of multiple AI containers (especially when interacting with local LLMs via Ollama), the following system capabilities are required:
+
+\subsection{Hardware Requirements}
+\begin{itemize}
+    \item \textbf{CPU:} Quad-core processor minimum (Apple Silicon M1/M2/M3 for macOS, Intel i5/i7 10th Gen+ or AMD Ryzen 5+ for Windows).
+    \item \textbf{RAM:} 16 GB minimum (32 GB highly recommended if running local LLMs like Llama-3 concurrently).
+    \item \textbf{Storage:} At least 20 GB of free SSD space for Docker images, vector storage, and databases.
+\end{itemize}
+
+\subsection{Software Dependencies}
+Before starting, ensure the following tools are installed:
+\begin{itemize}
+    \item \textbf{Docker Desktop:} The containerization engine.
+    \item \textbf{Git:} For repository cloning and version control.
+    \item \textbf{Code Editor:} Visual Studio Code, PyCharm, or similar (for editing \texttt{.env} and YAML files).
+\end{itemize}
+
+\section{Pre-Installation Configurations}
+
+\subsection{Windows Configuration (WSL 2)}
+Windows runs Docker via the Windows Subsystem for Linux (WSL 2). It is critical to allocate sufficient resources.
+\begin{enumerate}
+    \item Install WSL 2 by opening PowerShell as Administrator and running: \texttt{wsl --install}.
+    \item Restart your machine.
+    \item Install \textbf{Docker Desktop for Windows}. During installation, ensure the \textit{"Use WSL 2 instead of Hyper-V"} option is checked.
+    \item \textbf{Resource Allocation:} By default, WSL 2 dynamically allocates RAM. To prevent Out-Of-Memory (OOM) errors, create a \texttt{.wslconfig} file in your user directory (\texttt{C:\textbackslash Users\textbackslash YourName\textbackslash.wslconfig}):
+\begin{lstlisting}[language=bash]
+[wsl2]
+memory=12GB
+processors=4
+swap=4GB
+\end{lstlisting}
+    \item Open PowerShell and run \texttt{wsl --shutdown} to apply changes, then restart Docker Desktop.
+\end{enumerate}
+
+\subsection{macOS Configuration}
+Docker Desktop on macOS runs within a lightweight virtual machine.
+\begin{enumerate}
+    \item Download and install \textbf{Docker Desktop for Mac} (ensure you select the correct version: Apple Silicon vs. Intel).
+    \item Open Docker Desktop $\rightarrow$ Click the \textbf{Settings (Gear)} icon $\rightarrow$ Navigate to \textbf{Resources}.
+    \item \textbf{Resource Allocation:} Increase the limits to prevent crashes.
+    \begin{itemize}
+        \item \textbf{CPUs:} 4 or more.
+        \item \textbf{Memory:} 12 GB or more.
+        \item \textbf{Virtual Disk Limit:} Set to at least 40 GB.
+    \end{itemize}
+    \item Click \textbf{Apply \& Restart}.
+\end{enumerate}
+
+\section{Deploying the Ecosystem}
+
+\subsection{Step 1: Directory \& Volume Preparation}
+Create a dedicated folder for your project and set up the necessary subdirectories for persistent data mapping.
+
+\textbf{Windows (PowerShell):}
+\begin{lstlisting}[language=bash]
+mkdir C:\n8n-agentic-stack
+cd C:\n8n-agentic-stack
+mkdir n8n_data, qdrant_data
+\end{lstlisting}
+
+\textbf{macOS (Terminal):}
+\begin{lstlisting}[language=bash]
+mkdir ~/n8n-agentic-stack
+cd ~/n8n-agentic-stack
+mkdir n8n_data qdrant_data
+\end{lstlisting}
+
+\subsection{Step 2: Environment Variables (.env)}
+Create a file named \texttt{.env} in your project root directory. This securely holds your API keys and configuration settings.
+
+\begin{lstlisting}[language=bash]
+# .env file
+GENERIC_TIMEZONE=Asia/Kolkata
+TZ=Asia/Kolkata
+
+# PostgreSQL Settings
+POSTGRES_USER=ai_user
+POSTGRES_PASSWORD=ai_password
+POSTGRES_DB=ai_database
+
+# Langfuse / LiteLLM Config
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+LANGFUSE_HOST=http://host.docker.internal:3000
+\end{lstlisting}
+\textit{Note: The \texttt{host.docker.internal} string allows LiteLLM to route traffic properly to locally hosted models (e.g., Ollama) or locally hosted Langfuse instances on both Windows and Mac.}
+
+\subsection{Step 3: Creating the docker-compose.yml}
+Create a \texttt{docker-compose.yml} file in the same directory. This file defines the orchestrator, vector DB, and proxy.
+
+\begin{lstlisting}[language=bash]
+version: '3.8'
+
+services:
+  # 1. ORCHESTRATOR
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - TZ=${TZ}
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+      # Map your local workflow policies here
+      - ./policies:/home/node/.n8n-files/policies
+    networks:
+      - ai_net
+    restart: unless-stopped
+
+  # 2. VECTOR DATABASE
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant_vectordb
+    ports:
+      - "6333:6333" # REST API & Web UI
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - ai_net
+    restart: unless-stopped
+
+  # 3. MLOPS & ROUTING PROXY
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm_proxy
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    networks:
+      - ai_net
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # 4. MEMORY STORE
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - ai_net
+    restart: unless-stopped
+
+volumes:
+  n8n_data:
+  qdrant_data:
+  pg_data:
+
+networks:
+  ai_net:
+    driver: bridge
+\end{lstlisting}
+
+\subsection{Step 4: Executing the Deployment}
+Once the files are prepared, spin up the entire ecosystem.
+
+\textbf{Windows (PowerShell):}
+\begin{lstlisting}[language=bash]
+docker-compose up -d
+\end{lstlisting}
+
+\textbf{macOS (Terminal):}
+\begin{lstlisting}[language=bash]
+docker compose up -d
+\end{lstlisting}
+\textit{Docker will pull all necessary images and spin up the containers sequentially. The \texttt{-d} flag runs them in detached mode.}
+
+\section{Verification \& Next Steps}
+Once the containers are running, verify access by navigating to the following URLs in your web browser:
+\begin{itemize}
+    \item \textbf{n8n Dashboard:} \url{http://localhost:5678} (Complete the initial admin account setup).
+    \item \textbf{Qdrant Web UI:} \url{http://localhost:6333/dashboard} (Verify the visual dashboard loads).
+    \item \textbf{LiteLLM Proxy:} \url{http://localhost:4000/health/liveness} (Should return a 200 OK status).
+\end{itemize}
+
+\textbf{Integration Note:} When configuring n8n AI nodes to connect to your local Ollama instance (or LiteLLM proxy), remember to use \texttt{http://host.docker.internal:4000} (or \texttt{11434} for Ollama) as the Base URL instead of \texttt{localhost}. This ensures n8n reaches outside its container to the host network correctly.
+
+\end{document}

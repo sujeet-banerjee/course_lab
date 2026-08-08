@@ -1,0 +1,26 @@
+// Loop over input items and add a new field called 'myNewField' to the JSON of each one
+
+const temp =
+  parseInt(
+    $input.first().json.temperature
+  );
+
+let advice;
+if (temp > 35)
+{
+  advice = "Stay indoors";
+}
+else if (temp > 25)
+{
+  advice = "Carry water";
+}
+else
+{
+  advice = "Enjoy the weather";
+}
+
+for (const item of $input.all()) {
+  item.json.advice = advice;
+}
+
+return $input.all();

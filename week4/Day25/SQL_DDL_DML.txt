@@ -1,0 +1,24 @@
+CREATE TABLE public."Day25_Inference_logs"
+(
+    session_id character varying(50) NOT NULL,
+    request_id character varying(50) NOT NULL,
+    "timestamp" character varying(50) NOT NULL,
+    question text NOT NULL,
+    answer text,
+    contexts text[],
+    rag_used boolean DEFAULT false,
+    error text,
+    query_type character varying NOT NULL,  %Router
+    groundedness <FLOAT>,
+    relevancy <FLOAT>,
+    context_precision <FLOAT>,
+    context_recall <FLOAT>,
+    PRIMARY KEY (session_id, trace_id)
+);
+
+ALTER TABLE IF EXISTS public."Day25_Inference_logs"
+    OWNER to ai_user;
+
+
+==============================
+

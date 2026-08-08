@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Setup custom header/footer styling
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{Agentic Wokflows: N8N}}
+\rhead{ sujeet.banerjee@gmail.com \\ 
+sujeet.banerjee.professional@gmail.com }
+\lfoot{Simple Regn. workflow}
+\rfoot{\thepage}
+
+\title{\vspace{-2em}
+\Huge \textbf{Agentic Wokflows: N8N} \\
+\vspace{1em}
+\large \textit{Practice Set: Building a simple Registration Workflow} 
+}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\vspace{-4em}
+\hrule
+\vspace{1.5em}
+
+\section*{Objective}
+Design and implement an automated workflow in n8n to process student registrations. This exercise will test your ability to capture input data, apply conditional logic, and structure data output dynamically.
+\section*{}
+Also outline test-scenarios for the workflow.
+
+\section*{Core Requirements}
+Create a workflow that takes the following inputs for a registration record:
+\begin{itemize}
+    \item \textbf{Name:} (String)
+    \item \textbf{Experience (in years):} (Number)
+\end{itemize}
+
+The workflow must process this input and append the following new fields to the output record:
+\begin{enumerate}
+    \item \textbf{\texttt{assigned\_track}}:\\ If Experience is $< 5$ years, set to \texttt{'A'}. Otherwise, set to \texttt{'B'}.
+    \item \textbf{\texttt{category}}:\\ If Name is exactly \texttt{'Sujeet'}, set to \texttt{'Trainer'}. Otherwise, set to \texttt{'Student'}.
+    \item \textbf{\texttt{time}}:\\ Record the exact time of the registration processing (current timestamp).
+    \item \textbf{Trainer Override Logic}:\\ If the \texttt{category} is determined to be \texttt{'Trainer'}, the \texttt{assigned\_track} must be cleared (set to blank or \texttt{null}).
+\end{enumerate}
+
+\section*{Implementation Guidelines}
+\begin{itemize}
+    \item \textbf{Trigger:} You may use any trigger to start the workflow (e.g., a \texttt{Manual Trigger} or \texttt{Chat Trigger}).
+    \item \textbf{Mock Data Setup:} You may use an \texttt{Edit Fields (Set)} node immediately after the trigger to supply hardcoded input records for testing purposes.
+    \item \textbf{Nodes to Explore:} Consider using the \texttt{If}, \texttt{Switch}, and \texttt{Edit Fields (Set)} nodes to achieve the required conditional routing and data mutation visually.
+\end{itemize}
+
+\section*{Optional Bonus Challenges}
+For students looking to push their skills further, attempt the following advanced tasks:
+\begin{enumerate}[label=\textbf{Bonus \arabic*:}]
+    \item \textbf{Database Persistence (Postgres):} \\
+    Sign up for a free online tier of CockroachDB (which is PostgreSQL-compatible). Add a \texttt{Postgres} node at the end of your workflow to insert the fully processed registration records into an online database table.
+    
+    \item \textbf{Code Node Optimization (JavaScript):} \\
+    Replace the visual conditional flows (\texttt{If}/\texttt{Switch} nodes) entirely by using a single \texttt{Code} node. Write custom JavaScript within the node to calculate and set the \texttt{assigned\_track}, \texttt{category}, and \texttt{time}, including the override logic for the Trainer.
+\end{enumerate}
+
+\vspace{2em}
+\hrule
+\vspace{1em}
+% \noindent \textit{Instructor Note: Ensure you test your workflow with multiple mock records (e.g., a student with 3 years experience, a student with 6 years experience, and 'Sujeet' with any amount of experience) to verify all logical branches function correctly.}
+
+\end{document}

@@ -1,0 +1,40 @@
+Recap
+-----
+
+- Model LCM ==> Training and Inferencing
+- Agentic --> Inferencing, on top of based models
+- CoT, ToT
+
+
+Lect 4 - Example
+----------------
+
+Prompt: Summarize this document
+Expected: The company increased its revenue by 20%
+Actual: Revenue grew by one fifth
+
+** Pass / Fail?
+
+Exact Match: Fail
+Semantic Match: Pass 
+
+** Probabilistic outcome - no deterministic binary output
+ ==> Pass/Fail becomes a score (From 0 to 1)
+ ==> Validation becomes Evaluation
+
+
+** Triangular EVAL
+--------------------------------
+Failfulness: Ctx + A
+Accuracy: Ref + A
+Relevance: Q + A
+
+
+Q: What is the capital of France
+A: France is a country in the Western Europe
+
+Q: What is the company's refund policy?
+Context: "Refunds accepted with 30 days of purchase"
+A1: "Customer has 90 days to request refund"
+A2: "Refunds allowed within 30 day; premium customers get 60 days."   (Hallucinated)
+

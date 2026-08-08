@@ -1,0 +1,178 @@
+{
+  "name": "Bootcamp-Day9_trial_webhook",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        -160
+      ],
+      "id": "dbc04dff-5307-4185-a95c-4a6a621f9967",
+      "name": "Test"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weather2",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        0
+      ],
+      "id": "d459f954-90c5-464f-87fc-218e58a313e2",
+      "name": "fromChat",
+      "webhookId": "b1028875-5093-4b7a-a51c-b6f54684db10"
+    },
+    {
+      "parameters": {
+        "method": "=GET",
+        "url": "=https://wttr.in/{{ $json.body.city }}?format=j1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -368,
+        -144
+      ],
+      "id": "9c5ad449-0ae7-4a33-87aa-e0eb4053bda6",
+      "name": "HTTP weather external"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4cd91cac-07a4-4da1-97a9-57d78406d284",
+              "name": "city",
+              "value": "={{ $('fromChat').item.json.body.city }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "current_condition[0].humidity, current_condition[0].pressure, current_condition[0].temp_C, current_condition[0].visibility, current_condition[0].weatherDesc[0].value",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -144
+      ],
+      "id": "7e627173-418b-4652-8da3-4b20cf7e3728",
+      "name": "Set the city"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n    let tempterature = parseInt(item.json.temp_C)\n    if (tempterature > 35) {\n       item.json.advice = 'Stay indoors.';\n    } else if (tempterature > 25) {\n       item.json.advice = 'Carry water bottle';\n    } else {\n       item.json.advice = 'Enjoy weather!';\n    }\n    \n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -288
+      ],
+      "id": "cb7780e9-e230-4be3-a3ae-6a1935777060",
+      "name": "generate advice"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.humidity }}\n\n{{ $json.temp_C }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "a1f8ad04-1d2f-451d-a69b-e9708f0c75ca",
+      "name": "AI Agent"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Test": {
+      "main": [
+        []
+      ]
+    },
+    "fromChat": {
+      "main": [
+        [
+          {
+            "node": "HTTP weather external",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP weather external": {
+      "main": [
+        [
+          {
+            "node": "Set the city",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the city": {
+      "main": [
+        [
+          {
+            "node": "generate advice",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6ed9a2b2-1626-41ba-acc9-291e48f2afd0",
+  "meta": {
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "F15ynJMhMDrNzCw0",
+  "tags": []
+}

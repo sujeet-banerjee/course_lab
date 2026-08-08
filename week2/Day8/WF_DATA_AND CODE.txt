@@ -1,0 +1,45 @@
+====== WF Objective/Requirements =======
+Create a workflow to register students, with per student input should be:
+  Name:
+  Experience (in years):
+
+The workflow should also add these fields per record:
+- 'assigned_track' -->  If the experience < 5, should be set to 'A' else 'B'
+- 'category' --> If the name is 'Sujeet', set to 'Trainer' else 'Student'
+- 'time' --> The registration time should be recorded.
+Also, if the 'category' is 'Trainer' the 'assigned_track' should be blank (or null).
+
+* You may use any trigger (chat, manual)
+* You may use 'Edit/Set' node to supply hardcoded inputs/records
+
+Optional
+1. Add a Postgres node to persist the records to online Postgres/CockroachDB (create an online free subscription of CockroachDB)
+2. (for coding only) Use a 'code' node replace the conditional flows.
+
+
+===== Set Node ===========
+{
+  "name": "Jack",
+  "experience": 2,
+  "time": {{ $now }}
+}
+
+
+
+========== Code =============
+
+// Loop over input items and add a new field called 'myNewField' to the JSON of each one
+for (const item of $input.all()) {
+  if(item.json.name == 'Sujeet') {
+    item.json.category = 'Trainer';
+  }
+  else if(item.json.experience >= 3) {
+    item.json.category = 'Experienced';
+    item.json.assigned_track = 'Track-A';
+  } else {
+    item.json.category = 'Beginner';
+    item.json.assigned_track = 'Track-B';
+  }
+}
+
+return $input.all();

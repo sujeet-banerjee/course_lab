@@ -1,0 +1,31 @@
+CREATE TABLE public.day25_inference_logs
+(
+    session_id        varchar(100) NOT NULL,
+    request_id        varchar(100) NOT NULL,
+
+    created_at        timestamptz NOT NULL DEFAULT now(),
+
+    question          text NOT NULL,
+    answer            text,
+
+    context           text[],
+
+    rag_used          boolean NOT NULL DEFAULT false,
+
+    -- query type is same as the route
+    query_type        varchar(50),
+    langfuse_trace_id varchar(64),
+
+    error             text,
+
+    -- Offline evaluation results
+    groundedness      double precision,
+    relevancy         double precision,
+    context_precision double precision,
+    context_recall    double precision,
+
+    evaluated_at      timestamptz,
+
+    PRIMARY KEY (session_id, request_id)
+);
+

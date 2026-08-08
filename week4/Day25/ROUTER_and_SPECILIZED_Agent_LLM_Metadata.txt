@@ -1,0 +1,48 @@
+ROUTER LLM Metadata
+------------------------
+
+{
+  "request_id": "{{$json.requestId}}",
+  "session_id": "{{$json.sessionId}}",
+  "request_time": "{{$json.requestTime}}"
+}
+
+
+Specialized LLM metadata:
+----------------
+
+---- deprecated ---
+{
+"request_id": "{{ $('Merge_Session_details').item.json.requestId }}",
+  "session_id": "{{ $('Merge_Session_details').item.json.sessionId }}",
+  "request_time": "{{ $('Merge_Session_details').item.json.requestTime }}",
+"route": "{{ $('Merge_Session_details').item.json.output }}"
+}
+---------
+
+{
+"request_id": "{{ $('Merge_Session_details').item.json.requestId }}",
+  "session_id": "{{ $('Merge_Session_details').item.json.sessionId }}",
+  "request_time": "{{ $('Merge_Session_details').item.json.requestTime }}",
+"route": "{{ $('Merge_Session_details').item.json.output }}",
+
+"langfuse.trace.metadata.route": "{{ $('Merge_Session_details').item.json.output }}",
+
+"langfuse.trace.metadata.request_id": "{{ $('Merge_Session_details').item.json.requestId }}",
+
+"langfuse.session.id": "{{ $('Merge_Session_details').item.json.requestId }}"
+}
+
+
+{
+"request_id": "{{ $('Merge_Session_details').item.json.requestId }}",
+  "session_id": "{{ $('Merge_Session_details').item.json.sessionId }}",
+  "request_time": "{{ $('Merge_Session_details').item.json.requestTime }}",
+"route": "{{ $('Merge_Session_details').item.json.output }}",
+
+"langfuse.trace.metadata.route": "{{ $('Merge_Session_details').item.json.output }}",
+
+"langfuse.trace.metadata.request_id": "{{ $('Merge_Session_details').item.json.requestId }}",
+
+"langfuse.session.id": "{{ $('Merge_Session_details').item.json.requestId }}"
+}

@@ -1,0 +1,28 @@
+CockroachDB:
+
+cloud name: wise-bootcamper
+Cloud login: sujeet / 3xqjqWXdxn-UBj-OHDk2yg 
+
+CONN:
+Connection login: sujeet / YiYQsdHuwiJs-JGdr8EWSA
+
+Schema: public
+Maintenance DB: defaultdb
+DB: week2
+Host: wise-bootcamper-18741.jxf.gcp-asia-south1.cockroachlabs.cloud
+port: 26257
+
+=======================
+
+Create the table:
+
+CREATE TABLE REGISTER (
+  NAME  VARCHAR(50) PRIMARY KEY,
+  EXPERIENCE INT8,
+  COURSE VARCHAR(50),
+  TIME  VARCHAR(50),
+  CATEGORY  VARCHAR(50) ,
+  ASSIGNED_TRACK  VARCHAR(50)
+)
+
+==================================

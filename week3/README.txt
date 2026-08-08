@@ -11,9 +11,16 @@ http://localhost:5678/
 
 
 PGadmin:
+---Conn ---
+(host.docker.internal:5432)
 localhost:5432
 ai_user / ai_password 
-DB = ai_database
+--- databases (each has one credential) ---
+CHAT_MEM: chat_mem_day12
+LITELLM: ai_database
+
+
+
 
 
 

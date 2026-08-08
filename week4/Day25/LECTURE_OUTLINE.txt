@@ -1,0 +1,16 @@
+Day	Theme	Main outcome
+25A	RAG Observability & Evaluation Data	Capture Q, A, retrieved contexts, reference/GT linkage, trace ID; understand online vs offline evaluation
+25B	RAGAS → Langfuse Offline Evaluation	Batch Python evaluator calculates RAGAS metrics and attaches scores to Langfuse traces
+25C optional	Automated Evaluation Pipeline	Scheduled evaluation, persistence/Kafka, dataset generation, production sampling
+
+
+COmparison - Native Langfuse v/s Offline RAGAS
+
+
+| Capability                        | Native Langfuse Evaluator                             | Offline RAGAS |
+| --------------------------------- | ----------------------------------------------------- | ------------- |
+| Answer relevance                  | ✅                                                     | ✅             |
+| Faithfulness / Groundedness       | ⚠️ Only if retrieved context is explicitly available  | ✅             |
+| Context Precision                 | ⚠️ Difficult if context is embedded in the prompt     | ✅             |
+| Context Recall                    | ⚠️ Requires retrieved context (and often a reference) | ✅             |
+| Custom metrics / batch automation | Limited                                               | ✅             |

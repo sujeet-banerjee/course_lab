@@ -1,0 +1,158 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{listings}
+
+\definecolor{primary}{HTML}{2B3A55}
+\definecolor{secondary}{HTML}{E8C4C4}
+\definecolor{accent}{HTML}{F2E5E5}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=magenta,      
+    urlcolor=blue,
+    pdftitle={Groq and HuggingFace Setup with n8n},
+}
+
+\title{\textbf{Comprehensive Guide: Integrating Groq and Hugging Face with n8n}}
+\author{AI Agent Setup Guide}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document provides detailed, step-by-step instructions for students to create free accounts on Groq and Hugging Face. Furthermore, it outlines the comprehensive configuration steps required to integrate these platforms into n8n. The guide covers credential creation, AI Agent configuration using free chat models with custom temperature settings, and manual testing. As per the requirements, the agents are configured strictly without memory or external tools.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Part 1: Groq Configuration}
+
+\subsection{Creating a Free/Student Account on Groq Cloud}
+Groq provides a generous free tier for developers and students to access their blazing-fast LPUs (Language Processing Units) for running LLMs.
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Navigate to Groq Cloud:} Open your web browser and go to \url{https://console.groq.com/}.
+    \item \textbf{Sign Up:} Click on the ``Sign Up'' or ``Login'' button. You can sign in directly using a Google, GitHub, or email account. Using a student email (.edu) or linking your student GitHub account is recommended to keep your developer tools centralized.
+    \item \textbf{Access the Dashboard:} Once logged in, you will be redirected to the Groq Cloud Console dashboard.
+\end{enumerate}
+
+\subsection{Generating the Groq API Key}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Navigate to API Keys:} On the left-hand navigation menu of the Groq Console, click on \textbf{API Keys}.
+    \item \textbf{Create New Key:} Click the \textbf{Create API Key} button.
+    \item \textbf{Name the Key:} Give your key a descriptive name (e.g., \texttt{n8n-student-agent}).
+    \item \textbf{Copy the Key:} Once generated, copy the API key immediately. \textit{Note: You will not be able to view this key again once you close the modal.}
+\end{enumerate}
+
+\subsection{Configuring Groq Credentials in n8n}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Open n8n:} Access your n8n instance and navigate to the \textbf{Credentials} section on the left sidebar.
+    \item \textbf{Add Credential:} Click \textbf{+ Add Credential}.
+    \item \textbf{Select Groq:} Search for ``Groq'' and select the \textbf{Groq API} credential type.
+    \item \textbf{Input Key:} Paste the API key you copied from the Groq Cloud console into the \texttt{API Key} field.
+    \item \textbf{Save:} Name the credential (e.g., \texttt{Groq Student API Key}) and click \textbf{Save}.
+\end{enumerate}
+
+\subsection{Configuring the n8n Agent with Groq}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Create a Workflow:} Go to your n8n workflows and click \textbf{+ Add Workflow}.
+    \item \textbf{Add AI Agent Node:} Click the \textbf{+} button on the canvas, search for \textbf{AI Agent}, and add it to the canvas.
+    \item \textbf{Configure Agent Node:} 
+    \begin{itemize}
+        \item Click on the AI Agent node.
+        \item Ensure the \textbf{Agent Type} is set to something standard like \textit{Conversational Agent} or \textit{OpenAI Functions} (Groq supports OpenAI-compatible endpoints).
+        \item \textbf{Important:} Leave the \textit{Memory} and \textit{Tools} inputs disconnected as per the requirements.
+    \end{itemize}
+    \item \textbf{Add Chat Model:}
+    \begin{itemize}
+        \item Hover over the \textbf{Model} input on the left side of the AI Agent node and click the \textbf{+} icon.
+        \item Search for and select the \textbf{Groq Chat Model} node.
+        \item In the Groq Chat Model node, select the credential you created earlier (\texttt{Groq Student API Key}).
+        \item Select a free, fast model (e.g., \texttt{llama3-8b-8192} or \texttt{mixtral-8x7b-32768}).
+        \item Under \textbf{Options}, click \textbf{Add Option} and select \textbf{Temperature}.
+        \item Set the Temperature to your desired value (e.g., \texttt{0.7} for creative but focused responses).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Testing the Groq Agent via Manual Trigger}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Add Trigger:} Click the \textbf{+} button on the canvas and search for \textbf{Manual Trigger} (or On clicking 'Execute'). Add it to the canvas.
+    \item \textbf{Connect Nodes:} Click and drag the output of the Manual Trigger node to the input of the AI Agent node.
+    \item \textbf{Provide Input:} In the AI Agent node, set the input prompt. Under \textit{Text}, type a test prompt, for example: \textit{"Explain the concept of an API to a high school student."}
+    \item \textbf{Execute:} Click the \textbf{Test Workflow} or \textbf{Execute Node} button.
+    \item \textbf{Verify Output:} Check the output panel of the AI Agent node to see the response generated by the Groq model.
+\end{enumerate}
+
+\newpage
+
+\section{Part 2: Hugging Face Configuration}
+
+\subsection{Creating a Free/Student Account on Hugging Face}
+Hugging Face offers a vast repository of open-source models and a free Serverless Inference API, perfect for student projects.
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Navigate to Hugging Face:} Go to \url{https://huggingface.co/}.
+    \item \textbf{Sign Up:} Click \textbf{Sign Up} in the top right corner. 
+    \item \textbf{Student Benefits:} Enter your email address. If you have the GitHub Student Developer Pack, you can link your GitHub account later, but a standard free account provides access to the Inference API. Complete the registration and verify your email.
+\end{enumerate}
+
+\subsection{Generating the Hugging Face Access Token}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Access Settings:} Click on your profile picture in the top right corner and select \textbf{Settings}.
+    \item \textbf{Navigate to Access Tokens:} In the left sidebar, click on \textbf{Access Tokens}.
+    \item \textbf{Create New Token:} Click \textbf{New token}.
+    \item \textbf{Configure Token:} Name your token (e.g., \texttt{n8n-inference}). For n8n Inference integration, a \textbf{Read} token is typically sufficient, but you can select \textbf{Fine-grained} and grant inference permissions.
+    \item \textbf{Copy the Token:} Click Generate and copy the token (it usually starts with \texttt{hf\_}).
+\end{enumerate}
+
+\subsection{Configuring Hugging Face Credentials in n8n}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Open n8n Credentials:} Go back to n8n and navigate to the \textbf{Credentials} section.
+    \item \textbf{Add Credential:} Click \textbf{+ Add Credential}.
+    \item \textbf{Select Hugging Face:} Search for ``Hugging Face'' and select the \textbf{Hugging Face API} credential type.
+    \item \textbf{Input Token:} Paste your \texttt{hf\_...} token into the \texttt{Access Token} field.
+    \item \textbf{Save:} Name the credential (e.g., \texttt{HF Student Token}) and click \textbf{Save}.
+\end{enumerate}
+
+\subsection{Configuring the n8n Agent with Hugging Face}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Create/Use Workflow:} In your n8n workflow canvas, add a new \textbf{AI Agent} node (or use a separate workflow).
+    \item \textbf{Configure Agent Node:} 
+    \begin{itemize}
+        \item Ensure no memory or tool nodes are attached to this AI Agent.
+    \end{itemize}
+    \item \textbf{Add Chat Model:}
+    \begin{itemize}
+        \item Hover over the \textbf{Model} input of the AI Agent node and click the \textbf{+} icon.
+        \item Search for \textbf{Hugging Face Chat Model} (or Hugging Face Inference node if you are building a custom chain).
+        \item Select the \texttt{HF Student Token} credential.
+        \item \textbf{Select Model:} Specify a model that supports text generation and is available on the free inference API (e.g., \texttt{meta-llama/Meta-Llama-3-8B-Instruct} or \texttt{mistralai/Mistral-7B-Instruct-v0.2}).
+        \item \textbf{Set Temperature:} Under \textbf{Options} or \textbf{Parameters}, add \textbf{Temperature} and set it to a desired value (e.g., \texttt{0.5}).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Testing the Hugging Face Agent via Manual Trigger}
+\begin{enumerate}[label=\textbf{Step \arabic*.}]
+    \item \textbf{Add Trigger:} Ensure a \textbf{Manual Trigger} node is connected to the input of this AI Agent.
+    \item \textbf{Provide Input:} Double-click the AI Agent node and enter a test prompt under \textit{Text} (e.g., \textit{"Write a short poem about machine learning."}).
+    \item \textbf{Execute:} Click the \textbf{Test workflow} button.
+    \item \textbf{Verify Output:} Wait for the Inference API to respond and review the output text. \textit{Note: The Hugging Face free tier inference API can sometimes have cold starts, so the first request might take a few seconds longer.}
+\end{enumerate}
+
+\section{Summary}
+By following this guide, you have successfully set up free student-tier accounts on both Groq and Hugging Face. You have generated the necessary API keys, securely stored them in n8n, and configured headless AI Agents (without memory or tools) utilizing free models. Finally, you verified the integrations by manually triggering test prompts and adjusting model temperature settings for customized outputs.
+
+\end{document}

@@ -1,0 +1,1 @@
+https://wttr.in/{{$json.city}}?format=j1

@@ -5,6 +5,7 @@ langchain-openai==0.3.35
 langchain-ollama
 langchain_groq
 langchain_huggingface
+langfuse>=4.0.0
 
 ollama
 openai

@@ -1,0 +1,144 @@
+
+
+
+
+
+INTRO TO THE CHAT 
+------------------
+
+
+User_prompt:
+-------
+user query: {{ $json.body.query }}
+
+System Prompt:
+------------
+You are a helpful AI assistant.
+
+Your primary objective is to answer user query accurately.
+
+You have access to external tools.
+
+Whenever a tool can produce a more reliable answer than reasoning alone, use the tool.
+
+Examples:
+
+Arithmetic
+→ Calculator Tool
+
+General knowledge
+→ Answer directly.
+
+Never invent calculator results when a calculator tool is available.
+
+Always use the most appropriate tool. 
+
+Always form an appropriate response from the tool output.
+
+
+--------- Sys Prompt Adendum -----
+
+Current date/time
+→ Time Tool
+
+Currency / Exchange rates
+-> Exchange Tool
+
+Weather
+→ Weather Tool
+
+....................
+
+If using weather tool, extract the city from the query, and pass it as "city" json field in the request body. 
+
+Always form an appropriate response from the tool output, without explicitly quoting the 'output from the HTTP_Request tool'
+
+
+---------------
+
+
+Weather Tool (WEB-Tool)
+Description:
+---
+Weather Tool: Retrieves the current weather for a city.
+
+Use this tool whenever the user asks about:
+
+weather, temperature, humidity, forcast, Weather advice, rain, climate
+
+TOOL INPUT:
+The input must be a json, with "city" field as mandatory, for example:
+  
+{
+ 
+"city": "Bangalore"
+}
+
+---
+
+POST: http://localhost:5678/webhook/weather2
+(send body) (JSON) (Using fields below)
+Name: city
+Value: <CLICK 'from AI'> 
+{{ $fromAI('city', `Extract city from the user query`, 'string') }}
+
+
+
+USER CHAT QUERY
+==============
+
+ALL queries clubber together:
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query":"What is the current weather in Bangalore? And, what is the current time? Also calculate 2 + 2 * 5"}'
+
+output
+------- 
+"The current weather in Bangalore is partly cloudy with moderate heat. The current time is 16:34:37 on July 31, 2026. The result of the calculation 2 + 2 * 5 is 12."
+
+>>> Changing the order of the questions does not matter!
+
+................
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "Calculate 987654 * 123456"}'
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the time right now?"}'
+
+....................
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query": "What is the weather in Kanpur?"}'
+
+output
+------
+The weather in Kanpur is expected to be partly cloudy with a high chance of light drizzle. It is recommended to carr...
+
+
+.................
+
+=========  MEMORY ===========
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query":"What was our last quesion?"}'
+
+ 
+"output": 
+"I don't have any record of a previous question. This conversation just started."
+
+---- set the memory with the session-id ----
+
+REQ must have sessionId
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query":"Tell me the current time. And what is the current weather in Bangalore? Also calculate 2 + 2 * 5", "sessionId": "pqr456"}'
+
+..........
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query":"What was our last quesion?", "sessionId": "pqr456"}'
+
+
+........................
+
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/query" -Method POST -ContentType "application/json" -Body '{"query":"How many questions have I asked so far?", "sessionId": "pqr456"}'
+
+output
+------
+You have asked 2 questions so far.
+

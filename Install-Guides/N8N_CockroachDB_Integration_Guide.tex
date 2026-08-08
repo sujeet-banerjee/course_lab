@@ -1,0 +1,176 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegray},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,                    
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{n8n \& CockroachDB Integration}
+\fancyhead[R]{ sujeet.banerjee@gmail.com }
+\fancyfoot[C]{\thepage}
+
+\title{\textbf{Integrating n8n with CockroachDB}\\ \large Guided Integration \& Hands-on Exercises}
+\author{Data Engineering \& Agentic Workflows}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+This guide provides step-by-step instructions for creating a free, cloud-hosted PostgreSQL-compatible database using CockroachDB, connecting it securely to a local n8n instance, and using database records to dynamically hydrate prompt templates for Generative AI.
+
+\section{Phase 1: CockroachDB Account \& Database Setup}
+CockroachDB Serverless offers a generous free tier that is fully wire-compatible with PostgreSQL, making it the perfect remote database for n8n.
+
+\subsection{Step 1: Account Creation}
+\begin{enumerate}
+    \item Navigate to \url{https://cockroachlabs.cloud/signup}.
+    \item Create a free account using your email or GitHub/Google SSO.
+    \item Click \textbf{Create Cluster} and select the \textbf{Serverless (Free)} tier.
+    \item Choose a cloud provider (AWS/GCP) and a region closest to you.
+    \item Click \textbf{Create cluster}.
+\end{enumerate}
+
+\subsection{Step 2: Securing Connection Credentials}
+Once the cluster is created, a "Connection Info" modal will appear.
+\begin{enumerate}
+    \item Create a new SQL user and generate a password. \textbf{Save this password immediately}, as it will not be shown again.
+    \item View the \textbf{Connection String} (URL format). It will look similar to:
+    \begin{lstlisting}[language=bash]
+    postgresql://username:password@free-tier-cluster-url.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full
+    \end{lstlisting}
+    \item Note down the Host URL, Port (usually 26257), Database Name (defaultdb), Username, and Password.
+\end{enumerate}
+
+\subsection{Step 3: Creating the Schema \& Table}
+We need to create the table structure to hold our student records.
+\begin{enumerate}
+    \item In the CockroachDB dashboard, navigate to \textbf{SQL Console} (or connect via a tool like DBeaver/pgAdmin).
+    \item Execute the following SQL statement to create the table:
+\begin{lstlisting}[language=SQL]
+CREATE TABLE students (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100),
+    experience INT,
+    assigned_track VARCHAR(10),
+    category VARCHAR(50),
+    registration_time TIMESTAMP DEFAULT current_timestamp()
+);
+\end{lstlisting}
+\end{enumerate}
+
+\section{Phase 2: n8n Credential Configuration}
+Because CockroachDB uses the PostgreSQL wire protocol, we use n8n's native Postgres node.
+
+\subsection{Setting up the Postgres Credential}
+\begin{enumerate}
+    \item Open your n8n dashboard (e.g., \url{http://localhost:5678} for local, or \url{https://n8n.io/} for subscription based).
+    \item On the left sidebar, click \textbf{Credentials} $\rightarrow$ \textbf{Add Credential}.
+    \item Search for and select \textbf{Postgres}.
+    \item Fill in the details exactly as extracted from your CockroachDB connection string:
+    \begin{itemize}
+        \item \textbf{Host:} Your specific CockroachDB cluster URL.
+        \item \textbf{Database:} \texttt{defaultdb}
+        \item \textbf{User:} Your SQL username.
+        \item \textbf{Password:} Your SQL password.
+        \item \textbf{Port:} \texttt{26257} (Note: This is different from the default Postgres port 5432).
+    \end{itemize}
+    \item \textbf{CRITICAL STEP (SSL):} Toggle the \textbf{SSL} switch to \textbf{ON}. CockroachDB Serverless requires encrypted connections. Set the \textit{SSL Mode} to \texttt{require} or \texttt{verify-full}.
+    \item Click \textbf{Save}. If configured correctly, n8n will display a "Connection Successful" message.
+\end{enumerate}
+
+\section{Phase 3: Saving a Record via n8n Workflow}
+We will now build the first part of the workflow: accepting input and inserting it into the database.
+
+\subsection{Step 1: Mock Data Input}
+\begin{enumerate}
+    \item Create a new n8n workflow.
+    \item Add a \textbf{Manual Trigger} node.
+    \item Add an \textbf{Edit Fields (Set)} node and connect it to the trigger.
+    \item Configure the Set node with the following dummy variables (representing user input or evaluated data):
+    \begin{itemize}
+        \item String: \texttt{name} = \texttt{Sujeet}
+        \item Number: \texttt{experience} = \texttt{6}
+        \item String: \texttt{assigned\_track} = \texttt{B}
+        \item String: \texttt{category} = \texttt{Trainer}
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Step 2: Database Insert Node}
+\begin{enumerate}
+    \item Add a \textbf{PostgreSQL} node and connect it to the Set node.
+    \item Select the PostgreSQL credential you created earlier.
+    \item Set \textbf{Operation} to \textbf{Insert}.
+    \item Set \textbf{Schema} to \texttt{public} and \textbf{Table} to \texttt{students}.
+    \item Under \textbf{Columns}, type a comma-separated list of the columns you want to map: \\
+    \texttt{name, experience, assigned\_track, category}.
+    \item Execute the node. You should see a success response showing the data inserted into CockroachDB!
+\end{enumerate}
+
+\section{Phase 4: Hydrating a Prompt Template}
+In this final phase, we will query the database and use the retrieved data to dynamically construct a prompt text (hydration) without invoking an AI agent yet.
+
+\subsection{Step 1: Fetching the Data}
+\begin{enumerate}
+    \item Add another \textbf{PostgreSQL} node to the workflow.
+    \item Set \textbf{Operation} to \textbf{Execute Query}.
+    \item Enter the following query to fetch the most recent record for our target user:
+\begin{lstlisting}[language=SQL]
+SELECT name, experience, assigned_track, category 
+FROM students 
+WHERE name = 'Sujeet' 
+ORDER BY registration_time DESC 
+LIMIT 1;
+\end{lstlisting}
+    \item Execute the node to load the JSON object containing the database row.
+\end{enumerate}
+
+\subsection{Step 2: Prompt Hydration (Template Engine)}
+\begin{enumerate}
+    \item Add an \textbf{Edit Fields (Set)} node and connect it to the Query node.
+    \item Click \textbf{Add Value} $\rightarrow$ \textbf{String}.
+    \item Name the field: \texttt{hydrated\_prompt}.
+    \item In the Value field, click the \textbf{Expression} toggle (the small gear/formula icon).
+    \item Write the following template using n8n expression syntax to inject the database fields dynamically:
+\begin{lstlisting}[language=bash]
+System Prompt: You are a helpful educational assistant. 
+The current user is {{$json.name}}. 
+They are classified as a {{$json.category}} with {{$json.experience}} 
+years of experience. Please route all their queries strictly according 
+to Curriculum Track {{$json.assigned_track}}.
+\end{lstlisting}
+    \item Execute the node. The output JSON will contain your final \texttt{hydrated\_prompt} string, proving that data has been successfully routed from a cloud SQL database directly into an AI-ready prompt format.
+\end{enumerate}
+
+\end{document}

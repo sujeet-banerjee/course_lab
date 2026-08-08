@@ -1,103 +1,65 @@
 Day 15
 Why RAG Exists
+--------------
 
-Duration: 1 Hour
 
-20 min Theory
-10 min Architecture
-25 min Hands-on Demo
-5 min Q&A
-Learning Objectives
 
-By the end of Day 15 students should understand:
+Objective: 
 
+To understand:
 Why LLMs hallucinate
 Knowledge cutoff
+
 Memory ≠ Knowledge Base
 Why tools cannot solve every problem
 Why enterprise AI needs RAG
 High-level RAG architecture
 
+
 Important: There is no vector database today. No embeddings today. Day 15 is about creating the motivation for RAG.
-
-Part 1 – Theory (20 min)
-Start with a story
-
+----------------------------
+- Show the policy documents:
 Imagine your company has:
 
-HR Policies
-Leave Rules
-Travel Policy
+----------------
+Employee / HR Policies
+Leave/Travel Rules
 Medical Benefits
-Internal SOPs
+IT security / code of conduct policies
+----------------
 
-Ask the class:
-
+Question:
 "Can ChatGPT answer: 'How many casual leaves does our company provide?'"
 
 Expected answer:
-
 No.
 
-Why?
+Why? ==> Knowledge cut off
+
+* An LLM is trained once.
+* After training: No new knowledge enters automatically.
+
 
 Because it has never seen your company's documents.
+------------------------------
+| PDF                    | Pages | Words | Estimated Tokens |
+| ---------------------- | ----: | ----: | ---------------: |
+| Code_of_Conduct.pdf    |     2 |   696 |  **~900–1,400**  |
+| Employee_Handbook.pdf  |     3 |   902 |      **~1,200**  |
+| IT_Security_Policy.pdf |     2 |   686 |  **~900–1,250**  |
+| Travel_Policy.pdf      |     2 |   709 |  **~950–1,350**  |
 
-Draw this
-                Internet
-                    │
-         Public Knowledge
-                    │
-                    ▼
-                  LLM
 
-Explain:
+Combined
+Total pages: 9
+Total words: ~2,993
+Total prompt size: roughly 4,500–5,200 tokens
 
-The LLM knows:
+-------------------------------
 
-Python
-Linux
-SQL
-World history
 
-It does not know:
 
-Your HR policy
-Your salary structure
-Your customer database
-Your internal SOPs
-Knowledge Cutoff
-
-Explain:
-
-An LLM is trained once.
-
-After training:
-
-No new knowledge enters automatically.
-
-Examples:
-
-Ask:
-
-"What is our company's leave policy?"
-
-LLM:
-
-I don't know.
-
-Ask:
-
-"Who won today's IPL match?"
-
-LLM may hallucinate or admit it doesn't know.
-
-Demonstration
-
-Ask your Day 13 agent:
-
-What is the reimbursement policy of ABC Technologies?
-
+DEMO: Ask Day 14 agent WF: "How many casual leaves does our company provide?"
 It cannot answer.
 
 Even with:
@@ -111,63 +73,69 @@ Why?
 Because none of those contain company knowledge.
 
 Memory vs RAG
+-------------------------
 
 One of the most important diagrams of the bootcamp.
 
-Memory
-
-"My favorite color is blue."
-
-↓
-
-Conversation History
-
----------------------------
-
-Knowledge Base
-
-"Leave Policy.pdf"
-
-↓
-
-Enterprise Documents
 
 Emphasize:
 
-Memory stores conversations.
-
-RAG retrieves documents.
-
-Students often confuse these.
+- Memory stores conversations.
+- RAG retrieves documents.
 
 Why Tools are not enough
-
+------------------
 Could we create:
 
 HR Tool
-
 Finance Tool
-
 Travel Tool
-
 Medical Tool
-
 Engineering Tool
-
 Technically yes.
 
+
 But then:
+- thousands of APIs thousands of workflows impossible maintenance
+- Context Bloating!
 
-thousands of APIs
-thousands of workflows
-impossible maintenance
+Memory Bloating
+--------------
+** The table
+Total pages: 9
+Total words: ~2,993
+Total prompt size: roughly 4,500–5,200 tokens
 
-Instead:
+** 
+If each document averages 1,200 tokens, then:
+10 documents → ~12k tokens
+50 documents → ~60k tokens
+100 documents → ~120k tokens
 
-One document repository.
+
+==> Retrieve only fragments
+--------------
+Question:
+Can I take my company laptop home?
+
+Retrieved Chunk 1
+Employee Handbook
+Laptop Usage section
+≈180 tokens
+
+Retrieved Chunk 2
+IT Security Policy
+Laptop Security section
+≈160 tokens
+
+Total retrieved context:
+≈340 tokens
+--------------------
+
+
 
 Introduce RAG
-
+==============
 Only conceptually.
 
 Question
@@ -178,7 +146,7 @@ Retriever
 
 ↓
 
-Relevant Documents
+Relevant Document Fragment
 
 ↓
 
@@ -190,8 +158,9 @@ Answer
 
 No implementation yet.
 
-Part 2 – Architecture (10 min)
 
+Part 2 – Architecture (10 min)
+========================
 Compare three systems.
 
 Day 12
@@ -243,98 +212,10 @@ Not the internet.
 
 Documents.
 
-Part 3 – Hands-on Demo (25 min)
 
-Today's demo should intentionally fail.
 
-This is important.
 
-Demo 1 – Public Knowledge
-
-Ask:
-
-Who invented Linux?
-
-Correct.
-
-Demo 2 – Personal Memory
-
-Ask:
-
-My favorite language is Python.
-
-Then:
-
-What is my favorite language?
-
-Correct.
-
-Demo 3 – Company Knowledge
-
-Create a simple PDF:
-
-ABC Technologies
-
-Annual Leave:
-18 Days
-
-Medical Leave:
-10 Days
-
-WFH:
-3 Days / Week
-
-Ask:
-
-How many annual leave days do employees get?
-
-Agent:
-
-I don't know.
-
-Perfect.
-
-Do not fix it.
-
-Pause.
-
-Ask the class:
-
-Why did it fail?
-
-Discussion
-
-Students will suggest:
-
-Better prompts
-Better LLM
-GPT-5
-Claude
-Memory
-
-Reject each one.
-
-Finally say:
-
-Because the document never reached the model.
-
-Architecture Discussion
-
-Draw:
-
-PDF
-
-↓
-
-???
-
-↓
-
-LLM
-
-Ask:
-
-How do we connect these?
+Ask: How do we connect these?
 
 Answer:
 
@@ -416,55 +297,10 @@ PostgreSQL Memory
 
 Respond
 
-Exactly the Day 13 single-agent workflow (or General Agent) without any new nodes.
 
-The important part is not the workflow.
 
-It's demonstrating its limitation.
 
-Sample Prompts
-Success
-Who invented Linux?
-Success
-What did I ask you earlier?
-Failure
-How many casual leaves does ABC Technologies provide?
-Failure
-What is the reimbursement policy?
-Failure
-Who approves international travel?
-
-Students experience the limitation firsthand.
-
-Assignment
-
-Prepare one company document.
-
-Examples:
-
-HR Policy
-Employee Handbook
-IT SOP
-Product Manual
-University Rules
-Banking Procedures
-
-Tomorrow they'll ingest it.
-
-Transition to Day 16
-
-End with this slide:
-
-Conversation
-        │
-        ▼
-    Memory
-
-Documents
-        │
-        ▼
-   ???????
-
+================================
 Tomorrow
 
 ↓

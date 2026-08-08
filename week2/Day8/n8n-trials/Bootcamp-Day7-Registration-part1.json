@@ -1,0 +1,335 @@
+{
+  "name": "Bootcamp-Day7-Registration-part1",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -48
+      ],
+      "id": "315560b1-d503-4f09-8976-9aae77bfcd11",
+      "name": "RegTest"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e328d9b6-1d46-4186-b759-4601221bbd0c",
+              "name": "name",
+              "value": "Sujeet",
+              "type": "string"
+            },
+            {
+              "id": "d9b3892a-5411-4715-b69b-519f2eafe81a",
+              "name": "experience",
+              "value": 20,
+              "type": "number"
+            },
+            {
+              "id": "2a8b653d-1122-464d-a8e0-5a89d1c233a1",
+              "name": "time",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "035db8d6-bae3-47b0-b7e5-3fec7154cc56",
+      "name": "FixedTestValue"
+    },
+    {
+      "parameters": {
+        "content": "1. Check for the exp.\n2. check for the name\n3. Additional:\n- Assigned_Track ('A' or 'B')\n- Category {student | trainer}\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -240
+      ],
+      "id": "393645fb-6183-47e1-be18-4e6b1f0c3c2b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bef3f2dd-9c60-43f0-a618-6b80be26bc67",
+              "leftValue": "={{ $json.experience }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        160,
+        -128
+      ],
+      "id": "36cf1836-5d7d-472c-a119-85583eab96eb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3620c0ba-66e9-40a1-84c6-0a4d1550984a",
+              "name": "Category",
+              "value": "Student",
+              "type": "string"
+            },
+            {
+              "id": "3cccda27-04fb-4f1b-8b0e-2fa97a705795",
+              "name": "Assigned_Track",
+              "value": "A",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        352,
+        -208
+      ],
+      "id": "851cd2b8-2bb1-42ae-96b5-4454ffae76ea",
+      "name": "Set Track A",
+      "notesInFlow": true,
+      "notes": "and set category as 'Student'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1718323-2b72-42c1-ad61-227a4f2621d3",
+              "name": "category",
+              "value": "Student",
+              "type": "string"
+            },
+            {
+              "id": "586ef98e-02e7-43dd-8ccc-6fa31441fc71",
+              "name": "Track",
+              "value": "B",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        352,
+        0
+      ],
+      "id": "e0b29210-a344-4d02-adb1-22a274284bb7",
+      "name": "Set Track B"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e3f16ee4-a070-4045-b1e5-96843576ad5d",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "Sujeet",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -208
+      ],
+      "id": "103bb6aa-90cd-42e4-8a88-e75144d08d63",
+      "name": "Condition-Trainer"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c0465dc-9c92-496c-8226-9c34cc1fc9ae",
+              "name": "Category",
+              "value": "Trainer",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "except",
+        "excludeFields": "Category",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        -336
+      ],
+      "id": "061f90ac-ef93-4708-88cf-f00db75fb1ef",
+      "name": "SetCategoryTrainer"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "b949dc1d-3317-441f-b9e1-5a3fbf5744c1",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RegTest": {
+      "main": [
+        [
+          {
+            "node": "FixedTestValue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FixedTestValue": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Track A",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Track B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Track A": {
+      "main": [
+        [
+          {
+            "node": "Condition-Trainer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Condition-Trainer": {
+      "main": [
+        [
+          {
+            "node": "SetCategoryTrainer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set Track B": {
+      "main": [
+        [
+          {
+            "node": "Condition-Trainer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetCategoryTrainer": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4b0f5ff9-443c-4330-a64d-a6ea29b35af2",
+  "meta": {
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "GQT6FhNuVXAm5RUr",
+  "tags": []
+}

@@ -13,4 +13,9 @@ env/
 **/.env
 **/.idea
 **/Recordings/*
+**/Recording/*
+**/recordings/*
+**/recording/*
 **/*.mp4
+**/ALL_KEYS
+**/COCKROACHdb_CREDS.txt
