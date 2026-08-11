@@ -1,0 +1,495 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+
+% Custom Colors for Code Listings
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.96}
+
+% Listings Setup for Python & JSON
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=pythonstyle}
+
+\pagestyle{fancy}
+\fancyhf{} % Clears all default header and footer fields
+\fancyhead[R]{sujeet.banerjee@gmail.com
+\\
+sujeet.banerjee.pofessional@gmail.com} % Sets the right header
+\fancyhead[L]{Agentic AI Bootcamp}
+\fancyfoot[R]{\thepage} % Keeps the page number at the bottom center
+\fancyfoot[L]{Installation: Qdrant, N8N-VectorDB}
+\renewcommand{\headrulewidth}{0.4pt} % Adds a decorative line under the header (optional)
+\renewcommand{\footrulewidth}{0.4pt}
+
+\title{\textbf{Agentic Bootcamp: Qdrant on GCP \\
+Installation and N8N-VectorDB Integration Guide}}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Overview}
+Qdrant is an open-source, high-performance vector search engine designed for vector embeddings and payload filtering. This guide outlines the end-to-end setup of a Qdrant SaaS (Cloud) instance on Google Cloud Platform (GCP) using the Free Tier, followed by hands-on collection management, data ingestion, visual debugging, and Python-based data retrieval strategies.
+
+---
+
+\section{Creating a Qdrant SaaS Account on GCP (Free Tier)}
+
+Follow these detailed steps to provision a free Qdrant cloud cluster hosted on Google Cloud Infrastructure:
+
+\begin{enumerate}
+    \item \textbf{Navigate to Qdrant Cloud Portal:}
+    Open your web browser and navigate to \\
+    \href{https://cloud.qdrant.io}{https://cloud.qdrant.io}.
+    \item \textbf{Sign Up / Registration:}
+    \begin{itemize}
+        \item Click on \textbf{Sign Up}.
+        \item Register using your corporate email, Google SSO, or GitHub account.
+        \item Verify your email address if prompted.
+    \end{itemize}
+
+    \item \textbf{Create a New Cluster:}
+    \begin{itemize}
+        \item Once inside the Qdrant Cloud Dashboard, click the \textbf{Create Cluster} button.
+        \item In the \textbf{Cloud Provider} section, select \textbf{Google Cloud Platform (GCP)}.
+        \item Select your preferred GCP region (e.g., \texttt{us-central1} or \texttt{europe-west3}).
+    \end{itemize}
+
+    \item \textbf{Select the Free Tier Instance:}
+    \begin{itemize}
+        \item Under the cluster configuration tier, select \textbf{Free Tier} (typically provides 1 GB RAM, 0.5 vCPU, and up to 4M 384-dim vectors).
+        \item Enter a name for your cluster (e.g., \texttt{gcp-qdrant-dev-cluster}).
+        \item Click \textbf{Create Cluster}.
+    \end{itemize}
+
+    \item \textbf{Generate API Keys and Store Cluster Credentials:}
+    \begin{itemize}
+        \item Once the cluster state changes to \textbf{Healthy / Active}, navigate to the \textbf{API Keys} section in the left sidebar.
+        \item Click \textbf{Create API Key}, set permissions to Read/Write, and copy the generated key.
+        \item Copy your \textbf{Cluster Endpoint URL} \\ 
+        e.g.,
+        \texttt{https://<cluster-id>.<region>.gcp.cloud.qdrant.io:6333}.
+
+        \begin{figure}
+            \centering \includegraphics[width=1.0\linewidth]{Agentic/Qdrant_API_KEY.png}
+            \caption{Qdrant Create API Key}
+            \label{fig:placeholder}
+        \end{figure}
+        \\
+    \end{itemize}
+\end{enumerate}
+
+---
+
+\section{Creating an Example Vector Store (Collection) via UI}
+
+Qdrant provides a built-in Cloud Console and Dashboard UI to manage vector collections visually.
+
+\begin{enumerate}
+    \item \textbf{Access the Qdrant Web UI Dashboard:}
+    In the Qdrant Cloud console, click on your active cluster and select \textbf{Console} or click \textbf{Open Dashboard}. Alternatively, navigate to \texttt{https://<cluster-endpoint>:6333/dashboard}.
+    
+    \begin{figure}
+        \centering \includegraphics[width=1.0\linewidth]{Agentic/Qdrant_dashboard.png}
+        \caption{Qdrant Dashboard}
+        \label{fig:placeholder}
+    \end{figure}
+
+    \item \textbf{Open the Interactive Console:}
+    On the left navigation pane, select \textbf{Console} (or REST API Client inside Dashboard).
+
+    \item \textbf{Create Collection via UI / REST Console:}
+    In the interactive HTTP request window, execute a \texttt{PUT} request to create a collection named \texttt{ecommerce\_products}:
+
+\begin{lstlisting}[language=python, caption=REST Payload to Create Collection]
+PUT /collections/ecommerce_products
+{
+  "vectors": {
+    "size": 384,
+    "distance": "Cosine"
+  },
+  "hnsw_config": {
+    "m": 16,
+    "ef_construct": 100
+  }
+}
+\end{lstlisting}
+Refer to the Figure 3.
+
+    \item \textbf{Verify Collection Parameters:}
+    \begin{itemize}
+        \item Navigate to the \textbf{Collections} tab in the Dashboard.
+        \item Select \texttt{ecommerce\_products}.
+        \item Verify that the \textbf{Vector Dimension} is set to $384$, the \textbf{Distance Metric} is set to $Cosine$, and status indicates \textbf{Green / Ready}.
+    \end{itemize}
+\end{enumerate}
+
+    \begin{figure}
+        \centering \includegraphics[width=1.0\linewidth]{Agentic/Qdrant_Console.png}
+        \caption{Qdrant Interactive Console}
+        \label{fig:placeholder}
+    \end{figure}
+
+---
+
+\section{Automating Qdrant with n8n}
+
+n8n is a powerful workflow automation tool that provides a native Qdrant node, allowing you to visually manage your vector database and integrate it into low-code data pipelines.
+
+\subsection{Configuring the Qdrant Node Credentials}
+Before performing operations, you must connect n8n to your GCP-hosted Qdrant Cloud instance:
+\begin{enumerate}
+    \item Add a new \textbf{Qdrant} node to your n8n workflow canvas.
+    \item Open the node settings and under \textbf{Credentials}, select \textbf{Create New Credential} $\rightarrow$ \textbf{Qdrant API}.
+    \item In the credentials configuration window:
+    \begin{itemize}
+        \item \textbf{URL}: Enter your GCP cluster endpoint (e.g., \texttt{https://<cluster-id>.us-central1.gcp.cloud.qdrant.io:6333}).
+        \item \textbf{API Key}: Paste your Qdrant Cloud API key.
+    \end{itemize}
+    \item Click \textbf{Save} to authenticate.
+\end{enumerate}
+
+\subsection{Managing Collections via n8n Operations}
+
+Within the Qdrant node settings, set the \textbf{Resource} dropdown to \texttt{Collection}. You can then select specific operations to manage your vector stores.
+
+\subsubsection{1. Create Collection}
+Use this operation to instantiate a new collection to hold your vectors.
+\begin{itemize}
+    \item \textbf{Operation}: Select \texttt{Create}.
+    \item \textbf{Collection Name}: Enter the desired identifier (e.g., \texttt{customer\_support\_docs}).
+    \item \textbf{Vector Size}: Input the exact dimensionality of your embedding model (e.g., \texttt{384} or \texttt{1536}).
+    \item \textbf{Distance}: Select your preferred similarity metric (\texttt{Cosine}, \texttt{Euclid}, or \texttt{Dot}).
+    \item \textbf{Additional Fields}: Optionally add fields to configure \texttt{HNSW Config} (e.g., setting \texttt{m} or \texttt{ef\_construct}) directly at creation.
+\end{itemize}
+
+\subsubsection{2. List Collections}
+Use this operation to fetch all active collections in your Qdrant cluster.
+\begin{itemize}
+    \item \textbf{Operation}: Select \texttt{Get Many} (or \texttt{List}, depending on the n8n version).
+    \item \textbf{Output}: Executing this node will return a JSON array in the output pane, detailing all collection names and their deployment status on your GCP node, which can be passed to subsequent nodes for iteration or conditional logic.
+\end{itemize}
+
+\subsubsection{3. Update Collection}
+Use this operation to dynamically modify the indexing and optimization parameters of an existing collection.
+\begin{itemize}
+    \item \textbf{Operation}: Select \texttt{Update}.
+    \item \textbf{Collection Name}: Enter the name of the collection you wish to modify.
+    \item \textbf{Update Parameters}: Click \textbf{Add Field} to append parameters to update:
+    \begin{itemize}
+        \item \textbf{Optimizers Config}: Update fields like \texttt{deleted\_threshold} or \texttt{vacuum\_min\_vector\_number} to manage background disk operations and memory.
+        \item \textbf{HNSW Config}: Update graph indexing settings to favor search speed over accuracy (or vice versa) without re-uploading the data.
+    \end{itemize}
+\end{itemize}
+
+---
+
+\section{Uploading Data (Vectors) from JSON and CSV}
+
+Data ingestion is performed using the Python SDK (\texttt{qdrant-client}). Install required libraries first:
+\begin{lstlisting}[language=bash]
+pip install qdrant-client pandas sentence-transformers
+\end{lstlisting}
+
+\subsection{Ingesting Data from a CSV File}
+
+Assume a CSV file \texttt{products.csv} containing columns: \texttt{id}, \texttt{name}, \texttt{category}, \texttt{price}, and \texttt{description}.
+
+\begin{lstlisting}[language=Python, caption=Upload CSV Vectors to Qdrant]
+import pandas as pd
+from qdrant_client import QdrantClient
+from qdrant_client.models import PointStruct, Distance, VectorParams
+from sentence_transformers import SentenceTransformer
+
+# Initialize Client
+client = QdrantClient(
+    url="https://<your-cluster-id>.gcp.cloud.qdrant.io:6333",
+    api_key="<YOUR_API_KEY>"
+)
+
+COLLECTION_NAME = "ecommerce_products"
+
+# Load Embedding Model
+encoder = SentenceTransformer('all-MiniLM-L6-v2') # Output dim: 384
+
+# Read CSV Data
+df = pd.read_csv("products.csv")
+
+# Generate Embeddings and Prepare Points
+points = []
+for idx, row in df.iterrows():
+    text_to_embed = f"{row['name']} - {row['description']}"
+    vector = encoder.encode(text_to_embed).tolist()
+    
+    point = PointStruct(
+        id=int(row['id']),
+        vector=vector,
+        payload={
+            "name": row['name'],
+            "category": row['category'],
+            "price": float(row['price'])
+        }
+    )
+    points.append(point)
+
+# Upload Batch to Qdrant
+client.upsert(
+    collection_name=COLLECTION_NAME,
+    points=points
+)
+print(f"Successfully uploaded {len(points)} records from CSV.")
+\end{lstlisting}
+
+\subsection{Ingesting Data from a JSON File}
+
+Assume a JSON file \texttt{products.json} formatted as an array of JSON objects.
+
+\begin{lstlisting}[language=Python, caption=Upload JSON Vectors to Qdrant]
+import json
+from qdrant_client import QdrantClient
+from qdrant_client.models import PointStruct
+from sentence_transformers import SentenceTransformer
+
+client = QdrantClient(
+    url="https://<your-cluster-id>.gcp.cloud.qdrant.io:6333",
+    api_key="<YOUR_API_KEY>"
+)
+
+encoder = SentenceTransformer('all-MiniLM-L6-v2')
+
+with open("products.json", "r") as f:
+    data = json.load(f)
+
+points = []
+for item in data:
+    text = item['description']
+    vector = encoder.encode(text).tolist()
+    
+    points.append(PointStruct(
+        id=item['id'],
+        vector=vector,
+        payload={
+            "title": item['title'],
+            "tags": item.get('tags', []),
+            "in_stock": item.get('in_stock', True)
+        }
+    ))
+
+# Batch Upload
+client.upload_points(
+    collection_name="ecommerce_products",
+    points=points,
+    batch_size=64
+)
+print("JSON data successfully uploaded.")
+\end{lstlisting}
+
+---
+
+\section{Viewing Vector Graphs and HNSW Index Insights}
+
+Hierarchical Navigable Small World (HNSW) is the underlying graph indexing algorithm used by Qdrant for approximate nearest neighbor (ANN) search.
+
+\subsection{Inspecting HNSW Metrics via Qdrant UI}
+\begin{enumerate}
+    \item Open the **Qdrant Cloud Dashboard** and select your collection (\texttt{ecommerce\_products}).
+    \item Navigate to the **Info / Stats** panel to view real-time vector statistics:
+    \begin{itemize}
+        \item \textbf{Status}: \texttt{green} (indicates all segments are indexed).
+        \item \textbf{Indexed Vectors Count}: Number of vectors built into the HNSW graph.
+        \item \textbf{Segments Count}: View RAM vs. Disk segments.
+    \end{itemize}
+    \item Under **Collection Configuration**, inspect HNSW parameters:
+    \begin{itemize}
+        \item $m$: Number of edges per node in the construction graph (e.g., $16$).
+        \item $ef\_construct$: Size of dynamic candidate list during graph construction (e.g., $100$).
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Extracting HNSW Graph Telemetry via Python API}
+You can query collection cluster telemetry programmatically:
+
+\begin{lstlisting}[language=Python, caption=Fetch HNSW and Collection Metrics]
+from qdrant_client import QdrantClient
+
+client = QdrantClient(url="https://<cluster-endpoint>:6333", api_key="<API_KEY>")
+
+info = client.get_collection(collection_name="ecommerce_products")
+print("Status:", info.status)
+print("Vectors Count:", info.vectors_count)
+print("Indexed Vectors Count:", info.indexed_vectors_count)
+print("HNSW Config:", info.config.hnsw_config)
+\end{lstlisting}
+
+\subsection{Visualizing Vector Embeddings (dimensionality reduction using UMAP/t-SNE)}
+To visually inspect vector distances as a graph in 2D/3D space:
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Agentic/Qdrant_Graph.png}
+    \caption{Data Points, and Cosine Score}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{lstlisting}[language=Python, caption=Generate 2D Projection Graph of Qdrant Vectors]
+import matplotlib.pyplot as plt
+import umap
+import numpy as np
+from qdrant_client import QdrantClient
+
+client = QdrantClient(url="https://<cluster-endpoint>:6333", api_key="<API_KEY>")
+
+# Scroll vectors from collection
+records, _ = client.scroll(
+    collection_name="ecommerce_products",
+    limit=500,
+    with_vectors=True,
+    with_payload=True
+)
+
+vectors = np.array([r.vector for r in records])
+labels = [r.payload.get('category', 'unknown') for r in records]
+
+# Reduce dimensions using UMAP
+reducer = umap.UMAP(n_components=2, random_state=42)
+embedding_2d = reducer.fit_transform(vectors)
+
+# Plot Graph
+plt.figure(figsize=(10, 7))
+plt.scatter(embedding_2d[:, 0], embedding_2d[:, 1], alpha=0.7, c='blue')
+plt.title("2D Projection of Vector Topology (HNSW Collection)")
+plt.xlabel("UMAP Dimension 1")
+plt.ylabel("UMAP Dimension 2")
+plt.grid(True)
+plt.savefig("vector_graph.png")
+plt.show()
+\end{lstlisting}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Agentic/Qdrant_Points_CosineScore.png}
+    \caption{Data Points, and Cosine Score}
+    \label{fig:placeholder}
+\end{figure}
+---
+
+\section{Data Update and Retrieval Strategies (Python Code Snippets)}
+
+\subsection{Strategy 1: Vector \& Payload Upsert (Insert or Update)}
+Upserting updates existing points if the ID matches or creates a new point if it does not exist.
+
+\begin{lstlisting}[language=Python, caption=Upsert and Update Vector/Payload]
+from qdrant_client import QdrantClient
+from qdrant_client.models import PointStruct
+
+client = QdrantClient(url="https://<cluster-endpoint>:6333", api_key="<API_KEY>")
+
+# Update Payload for an existing point (ID: 101)
+client.set_payload(
+    collection_name="ecommerce_products",
+    payload={"price": 29.99, "in_stock": False},
+    points=[101]
+)
+\end{lstlisting}
+
+\subsection{Strategy 2: Similarity Top-K Vector Search}
+Find the top-$K$ nearest items based on cosine similarity vector search.
+
+\begin{lstlisting}[language=Python, caption=Top-K Similarity Search]
+from qdrant_client import QdrantClient
+from sentence_transformers import SentenceTransformer
+
+client = QdrantClient(url="https://<cluster-endpoint>:6333", api_key="<API_KEY>")
+encoder = SentenceTransformer('all-MiniLM-L6-v2')
+
+query_text = "wireless noise cancelling headphones"
+query_vector = encoder.encode(query_text).tolist()
+
+search_results = client.search(
+    collection_name="ecommerce_products",
+    query_vector=query_vector,
+    limit=5  # Top-K
+)
+
+for result in search_results:
+    print(f"ID: {result.id} | Score: {result.score:.4f} | Payload: {result.payload}")
+\end{lstlisting}
+
+\subsection{Strategy 3: Filtered Top-K Similarity Search (Hybrid Filtering)}
+Combine semantic vector search with boolean payload filters (e.g., price range, category).
+
+\begin{lstlisting}[language=Python, caption=Filtered Vector Search]
+from qdrant_client import QdrantClient
+from qdrant_client.models import Filter, FieldCondition, Range, MatchValue
+from sentence_transformers import SentenceTransformer
+
+client = QdrantClient(url="https://<cluster-endpoint>:6333", api_key="<API_KEY>")
+encoder = SentenceTransformer('all-MiniLM-L6-v2')
+
+query_vector = encoder.encode("gaming laptop").tolist()
+
+# Define strict payload filter
+search_filter = Filter(
+    must=[
+        FieldCondition(
+            key="category",
+            match=MatchValue(value="Electronics")
+        ),
+        FieldCondition(
+            key="price",
+            range=Range(lte=1500.00, gte=500.00)
+        )
+    ]
+)
+
+filtered_results = client.search(
+    collection_name="ecommerce_products",
+    query_vector=query_vector,
+    query_filter=search_filter,
+    limit=3
+)
+
+for res in filtered_results:
+    print(f"Match: {res.payload['name']} | Price: {res.payload['price']} | Score: {res.score:.4f}")
+\end{lstlisting}
+
+---
+
+\section{Summary}
+You now have a fully operational Qdrant Cloud instance running on GCP Free Tier. You can manage collections visually using the Web UI, upload batch datasets from CSV and JSON files, monitor HNSW indexing stats, and programmatically query/update vectors using advanced similarity filtering strategies in Python.
+
+\end{document}
