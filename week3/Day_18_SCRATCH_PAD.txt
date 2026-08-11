@@ -1,0 +1,45 @@
+
+===== N8N WF: RAG Fundamentals =========
+
+M --> W/R Files --> extract from 
+
+
+File Paths
+----------
+/home/node/.n8n-files/policies/*.pdf
+
+
+
+Webhook path
+----------
+/retrieval
+
+
+Edit/Set 
+-------
+file_metadata -->
+{
+"fileExtension": "{{ $json.fileExtension }}",
+"mimeType": "{{ $json.mimeType }}",
+"fileName": "{{ $json.fileName }}",
+"fileSize": "{{ $json.fileSize }}",
+"numpages": "{{ $json.numpages }}",
+
+"PDFFormatVersion": "{{ $json.info.PDFFormatVersion }}",
+
+"Author": "{{ $json.info.Author }}",
+"CreationDate": "{{ $json.info.CreationDate }}",
+"Title": "{{ $json.info.Title }}"
+}
+
+
+EMBEDDING MODEL: sentence-transformers/distilbert-base-nli-mean-tokens (Hugging Face)
+
+INVOCATION
+==========
+
+Invoke-RestMethod -Uri "http://localhost:5678/webhook-test/smartqa" -Method POST -ContentType "application/json" -Body '{"userMessage":"I am Sujeet, a new Joiniee at Example, Inc. How many leaves am I entitle to in a year? And what are the travel policies?", "sessionId": "PQR123"}'
+
+>>>???
+
+

@@ -1,0 +1,132 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue!70!black,
+}
+
+\pagestyle{fancy}
+\fancyhf{} % Clears all default header and footer fields
+\fancyhead[R]{sujeet.banerjee@gmail.com
+\\
+sujeet.banerjee.professional@gmail.com} % Sets the right header
+\fancyhead[L]{Agentic AI Bootcamp}
+\fancyfoot[R]{\thepage} % Keeps the page number at the bottom center
+\fancyfoot[L]{Advanced: PDF Data Extraction}
+\renewcommand{\headrulewidth}{0.4pt} % Adds a decorative line under the header (optional)
+\renewcommand{\footrulewidth}{0.4pt}
+
+\title{\textbf{Advanced Strategies for PDF Text Extraction and Data Cleaning in RAG Systems}}
+\author{Detailed Notes - Agentic AI Bootcamp}
+\date{}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+In Retrieval-Augmented Generation (RAG) pipelines, the quality of the generated response is strictly upper-bounded by the quality of the retrieved context. PDFs remain the de facto standard for enterprise documents (reports, research papers, manuals), but their format is fundamentally presentation-oriented, not semantically structured. This document outlines advanced strategies for extracting, parsing, and cleaning text from various PDF types before the chunking stage.
+
+\section{Categorization of PDF Documents}
+Before applying extraction techniques, it is essential to classify the PDF into one of two primary categories:
+\begin{itemize}
+    \item \textbf{Text-Based (Native) PDFs:} Generated directly from digital sources (e.g., MS Word, LaTeX). They contain character encodings and explicit text layers.
+    \item \textbf{Scanned (Image-Based) PDFs:} Created via physical scanners. They contain no text layer, only rasterized images of pages.
+\end{itemize}
+
+\section{Extraction Strategies for Text-Based PDFs}
+Native PDFs require libraries that can read the internal text streams.
+
+\subsection{Standard Text Extraction}
+\begin{itemize}
+    \item \textbf{PyMuPDF (fitz):} Highly performant, offers bounding box access, and preserves reading order reasonably well. Ideal for extracting text, images, and basic layout information.
+    \item \textbf{pdfplumber:} Excellent for detailed character-level bounding box analysis. Slower than PyMuPDF but superior for debugging complex layouts and extracting tabular data.
+\end{itemize}
+
+\subsection{Layout-Aware Parsing}
+Standard extraction often fails on multi-column layouts, interleaving text across columns.
+\begin{itemize}
+    \item \textbf{Heuristic Methods:} Sorting text blocks by their $(x, y)$ coordinates.
+    \item \textbf{Machine Learning Models:} Utilizing layout analysis models (e.g., LayoutLMv3, YOLOX-based parsers like Unstructured) to classify blocks into \texttt{Title}, \texttt{Text}, \texttt{List}, \texttt{Table}, and \texttt{Figure}.
+\end{itemize}
+
+\section{Extraction Strategies for Scanned PDFs (OCR)}
+For scanned documents, Optical Character Recognition (OCR) is mandatory.
+
+\subsection{Pre-processing Images}
+OCR accuracy drops significantly with poor image quality. Pre-processing steps include:
+\begin{itemize}
+    \item \textbf{Binarization:} Converting grayscale/color images to black and white (e.g., Otsu's thresholding, adaptive thresholding).
+    \item \textbf{Deskewing:} Rotating the image to correct scanning tilt.
+    \item \textbf{Denoising:} Applying Gaussian blurs or median filters to remove background artifacts.
+\end{itemize}
+
+\subsection{OCR Engines}
+\begin{itemize}
+    \item \textbf{Tesseract OCR:} Open-source, supports many languages. Requires rigorous image pre-processing for optimal results.
+    \item \textbf{EasyOCR / PaddleOCR:} Deep learning-based, handles varied fonts, orientations, and complex backgrounds better than Tesseract.
+    \item \textbf{Cloud APIs:} AWS Textract, Google Cloud Document AI, and Azure Document Intelligence provide state-of-the-art accuracy, including built-in layout and table understanding.
+\end{itemize}
+
+\section{Specialized Extraction Techniques}
+
+\subsection{Table Extraction}
+Tables contain dense relational data that standard text extraction flattens into unreadable strings.
+\begin{itemize}
+    \item \textbf{Tools:} Camelot, Tabula, or OCR-based table parsers (Table Transformer).
+    \item \textbf{Representation:} Convert extracted tables into Markdown, HTML, or CSV string formats before chunking to preserve row/column relationships for the LLM.
+\end{itemize}
+
+\subsection{Optical Mark Recognition (OMR)}
+Used for forms with checkboxes or radio buttons.
+\begin{itemize}
+    \item \textbf{Strategy:} Detect contour boxes using OpenCV. Calculate the pixel density (ratio of black to white pixels) inside the box. A density above a specific threshold implies a ``checked'' state.
+    \item \textbf{Mapping:} Map the checked state to adjacent text to yield key-value pairs (e.g., \texttt{Is\_Employed: True}).
+\end{itemize}
+
+\subsection{Figures and Charts}
+\begin{itemize}
+    \item \textbf{Extraction:} Use PyMuPDF to extract images.
+    \item \textbf{Vision-Language Models (VLMs):} Pass extracted images through models like LLaVA or GPT-4o to generate descriptive captions, injecting these captions back into the text stream.
+\end{itemize}
+
+\section{Data Cleaning Post-Extraction}
+Raw extracted text is rarely ready for embedding and chunking. A robust cleaning pipeline is critical.
+
+\subsection{Artifact Removal}
+\begin{itemize}
+    \item \textbf{Headers/Footers \& Page Numbers:} Often interrupt sentence flow across page boundaries. Remove using regex (e.g., \verb|^\d+$|) or by ignoring text within the top/bottom 10\% of the page bounding box.
+    \item \textbf{Watermarks:} Filter out repetitive strings that have low opacity or span diagonally across bounding boxes.
+\end{itemize}
+
+\subsection{Text Normalization}
+\begin{itemize}
+    \item \textbf{De-hyphenation:} Words split across lines (e.g., ``docu-\textbackslash nment'') must be rejoined. Use regex: \verb|re.sub(r'-\n\s*', '', text)| (with dictionary checks to avoid merging legitimate hyphenated words).
+    \item \textbf{Whitespace Normalization:} Collapse multiple spaces, tabs, and spurious newlines into single spaces.
+    \item \textbf{Unicode Normalization:} Convert ligatures (e.g., ``\mbox{fi}'', ``\mbox{fl}'') to standard characters using NFKC normalization.
+\end{itemize}
+
+\subsection{Formatting and Metadata Enrichment}
+\begin{itemize}
+    \item \textbf{Markdown Conversion:} Where possible, convert headings into Markdown (e.g., \texttt{\# Heading}) to provide structural cues for chunking algorithms (like LangChain's \texttt{MarkdownHeaderTextSplitter}).
+    \item \textbf{Metadata Tagging:} Append source metadata (page number, document ID, section title) to the cleaned text blocks. This is vital for downstream Graph-RAG or precise citation generation.
+\end{itemize}
+
+\section{Conclusion}
+Thorough PDF extraction and data cleaning are non-negotiable precursors to effective RAG. By treating native and scanned PDFs distinctly, deploying layout-aware parsing, utilizing OMR for forms, and rigorously normalizing the extracted text, we ensure that the subsequent chunking phase operates on coherent, high-fidelity semantic units.
+
+\end{document}
