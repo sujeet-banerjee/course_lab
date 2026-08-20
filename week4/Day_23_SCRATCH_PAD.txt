@@ -1,0 +1,48 @@
+====== CODESPACES (FOR LITELLM CLOUD DEPLOY) =======
+
+1. login to github
+                git clone git@github.com:sujeet-banerjee/agentic-crew.git
+                git checkout enhance/saasify
+2. https://github.com/codespaces configure a new codepace
+3. Configure secrets in codespaces: https://github.com/settings/codespaces
+
+From Codespace Terminal:
+------------------
+env | grep LANG
+
+
+LANGFUSE_SECRET_KEY="sk-lf-..."
+LANGFUSE_PUBLIC_KEY="pk-lf-..."
+LANGFUSE_BASE_URL="https://jp.cloud.langfuse.com"
+
+
+LiteLLM container logs
+---------------
+docker logs -f litellm_proxy
+
+============== Lite LLM Config ===========
+
+Start LiteLLM
+-------------
+ docker-compose -f docker-compose-codespace.yml down
+
+
+
+============== LangFuse =============
+https://jp.cloud.langfuse.com/project/cmrg47nul007sad0ezkovasia/traces
+Login using <Prof Gmail>
+
+
+LiteLLM Debug: 
+docker exec litellm_proxy env | grep LANG
+
+LiteLLM container logs:
+docker logs -f litellm_proxy
+
+===== N8N WF + LiteLLM =========
+
+
+Create a simple agent with N8N default 'Chat' node, use LiteLLM Credential (with the codespace URL/Domain)
+
+
+

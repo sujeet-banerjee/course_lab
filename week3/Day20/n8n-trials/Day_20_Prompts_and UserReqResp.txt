@@ -38,6 +38,11 @@ file_metadata -->
 
 EMBEDDING MODEL: sentence-transformers/distilbert-base-nli-mean-tokens (Hugging Face)
 
+
+Data Loader
+--------------
+set metadata
+
 INVOCATION
 ==========
 

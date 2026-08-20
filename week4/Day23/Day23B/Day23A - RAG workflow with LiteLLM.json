@@ -1,0 +1,493 @@
+{
+  "name": "Day23A - RAG workflow with LiteLLM",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        -64
+      ],
+      "id": "bd599902-3607-4919-a730-9a5d02d69e5e",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "rPvHkNCLESvHtodB",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hr/qna",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        -304
+      ],
+      "id": "139a2efc-7ff1-4438-be10-10a73005e8b3",
+      "name": "Webhook",
+      "webhookId": "d897926d-681b-4ce3-85fb-3c13014098cc"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.answer }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        576,
+        -320
+      ],
+      "id": "4f39f8e2-cb83-4f70-8db6-b2244389917a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n* **LiteLLM Proxy** Using Basic LLM chain, with a proxy for routing to any LLM\n* No code change\n\n* Endpoint: http://localhost:5678/webhook/hr/qna\n\n#### NOTE\n* The Ingestion pipeline is removed. To invoke the same use any of these workflows:\n    * 19A,B,C\n    * 18 A, B, C\n* Multiple proxies created (which can be statically bound to underlying LLMs)",
+        "height": 336,
+        "width": 832
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -688
+      ],
+      "id": "2b3469bc-4425-45d8-9c16-599c823af73a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "prompt": "={{ $json.query }}",
+        "topK": 8,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -576,
+        -304
+      ],
+      "id": "124feeaf-4226-41af-8b71-026c35129528",
+      "name": "Qdrant Vector Store - RETRIEVAL",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      },
+      "notes": "RETRIEVAL"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -64
+      ],
+      "id": "9730dde3-7d56-4a2a-aecf-4480903b9df1",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "aMCpU7cNNmxXjSU6",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Question: {{ $json.question }}\n\nContext:\n-----------------------------\n{{ $json.context }}\n-----------------------------",
+        "needsFallback": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an HR Assistant.  \n\nYou are given the Context and a Question.\n\nAnswer ONLY from the supplied context.  \n\nIf the answer cannot be found in the context, say:  \"I couldn't find this information in the policies.\"  \n\nNever invent policies.\n\nQuote relevant sections whenever possible."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        48,
+        -496
+      ],
+      "id": "9c704147-e48d-4226-a6a2-fce93262effe",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "body.query, body.sessionId",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        -304
+      ],
+      "id": "59b15975-1c23-48db-9026-66e326931b6d",
+      "name": "Set query and sessionId"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "document.pageContent",
+              "renameField": true,
+              "outputFieldName": "context"
+            }
+          ]
+        },
+        "options": {
+          "mergeLists": true
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -304
+      ],
+      "id": "932da5ef-5f0b-4010-8d1c-54fc379ccae7",
+      "name": "Aggregate Chunks"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8d63bb73-b04a-4d89-99d3-d1bf54c23230",
+              "name": "context",
+              "value": "={{ $json.context }}",
+              "type": "array"
+            },
+            {
+              "id": "e45f19cb-1a43-4fa2-834b-8584f74c5437",
+              "name": "question",
+              "value": "={{ $('Set query and sessionId').item.json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "document.pageContent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        -304
+      ],
+      "id": "a9817842-13ba-48ef-9c89-3efc41517264",
+      "name": "Set Context and Question"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        -320
+      ],
+      "id": "6d9d4c9a-256e-4a8f-8b6f-785cae650cd3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "978e84e3-92cc-49ee-8ff9-c56b8a9cbb58",
+              "name": "answer",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -208
+      ],
+      "id": "363634dc-c7b1-42f0-b3b1-8fab8dcfde2b",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "={{ 'groq/llama-3.3-70b-versatile' }}",
+          "mode": "id"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        16,
+        -48
+      ],
+      "id": "b4afa211-4066-43f5-a7fb-14865d98093b",
+      "name": "LiteLLM Proxy - Groq/llama",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt4o",
+          "mode": "list",
+          "cachedResultName": "gpt4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        0
+      ],
+      "id": "1f537162-8e3a-4376-b5c8-a8e3112a8743",
+      "name": "LiteLLM Proxy - GPT-4.0",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "ollama/llama3",
+          "mode": "list",
+          "cachedResultName": "ollama/llama3"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        32
+      ],
+      "id": "048315ac-27fc-432e-9dcc-9fefac86e62b",
+      "name": "LiteLLM Proxy - Ollama/llama3",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set query and sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store - RETRIEVAL": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set query and sessionId": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Chunks": {
+      "main": [
+        [
+          {
+            "node": "Set Context and Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Context and Question": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiteLLM Proxy - Groq/llama": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "LiteLLM Proxy - GPT-4.0": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c35b83a5-cc2a-49c3-810b-fd94a1538d46",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "uC05NVmcc0WJ2zNo",
+  "tags": []
+}

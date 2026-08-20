@@ -1,0 +1,109 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref,amsmath,amssymb,booktabs,longtable,fancyhdr,array,microtype}
+\hypersetup{colorlinks=true,linkcolor=blue!70!black,urlcolor=blue!70!black}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{Agentic AI Bootcamp}
+\fancyhead[R]{sujeet.banerjee@gmail.com\\sujeet.banerjee.professional@gmail.com}
+\fancyfoot[L]{Langfuse SaaS Setup Guide}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}\renewcommand{\footrulewidth}{0.4pt}
+\title{\textbf{Langfuse SaaS Setup \& LiteLLM Integration}\\\large Step-by-Step Guide for Agentic Workflows}
+\author{Detailed Notes -- Agentic AI Bootcamp}\date{}
+\begin{document}\maketitle\tableofcontents\newpage
+
+\section{Introduction}
+Observability is a critical component of any modern AI architecture. When orchestrating agentic workflows using platforms like n8n and routing LLM calls through a proxy model, a dedicated telemetry platform is required to trace execution, monitor latency, and analyze token costs. Langfuse provides an observability platform designed specifically for LLM applications.
+
+This guide outlines the process of creating a free Langfuse Cloud account and properly integrating it with a LiteLLM proxy deployed in a GitHub Codespace.
+
+\section{CONFIGURING LANGFUSE}
+
+\subsection{Step 1: Creating a Free Langfuse Account}
+Langfuse offers a fully managed cloud tier with a generous free plan suitable for development and bootcamp environments.
+
+\begin{enumerate}
+    \item Navigate to the Langfuse Cloud portal. You must choose a data region:
+    \begin{itemize}
+        \item \textbf{US Region:} \url{https://us.cloud.langfuse.com}
+        \item \textbf{EU Region:} \url{https://cloud.langfuse.com}
+    \end{itemize}
+    \item Select \textbf{Sign Up} and authenticate using your preferred method (GitHub, Google, or Email/Password).
+    \item Upon initial login, you will be prompted to create an \textbf{Organization} and a \textbf{Project}. Give your project a descriptive name, such as \textit{``Agentic Crew Bootcamp''}.
+\end{enumerate}
+
+\subsection{Step 2: Generating API Credentials}
+To allow the local environment to transmit telemetry data, you must generate API keys.
+
+\begin{enumerate}
+    \item In your Langfuse dashboard, navigate to \textbf{Settings} (the gear icon) on the left navigation menu.
+    \item Select \textbf{API Keys}.
+    \item Click \textbf{Create New API Key}.
+    \item A modal will appear displaying three critical pieces of information. \textbf{Copy these immediately}, as the Secret Key will not be shown again:
+    \begin{itemize}
+        \item \texttt{Public Key} (Starts with \texttt{pk-lf-...})
+        \item \texttt{Secret Key} (Starts with \texttt{sk-lf-...})
+        \item \texttt{Host URL} (Matches the region you signed up in, e.g., \url{https://jp.cloud.langfuse.com})
+    \end{itemize}
+\end{enumerate}
+
+\section{CONSUMING LANGFUSE CREDENTIALS}
+
+\subsection{Ex 1: Configuring the Github \textit{Codespace} Environment}
+LiteLLM utilizes the Langfuse Python SDK internally. The SDK requires specific environment variables to authenticate and route payloads correctly.
+
+In your GitHub Codespace, locate your environment configuration file (typically \texttt{.env}) and append the following variables:
+
+\begin{verbatim}
+LANGFUSE_PUBLIC_KEY="pk-lf-YOUR_PUBLIC_KEY"
+LANGFUSE_SECRET_KEY="sk-lf-YOUR_SECRET_KEY"
+LANGFUSE_HOST="https://jp.cloud.langfuse.com" 
+\end{verbatim}
+
+\begin{quote}
+\textbf{Crucial Architectural Note:} The host environment variable \textit{must} be named \texttt{LANGFUSE\_HOST}. Using alternatives like \texttt{LANGFUSE\_BASE\_URL} will cause the OpenTelemetry exporter to silently fall back to its default US endpoints. This results in \texttt{401 Invalid credentials} errors during the asynchronous batch export if your keys belong to a different geographic region.
+\end{quote}
+
+\subsubsection{Updating the LiteLLM Proxy Configuration}
+Ensure your \texttt{config.yaml} explicitly enables Langfuse in the callbacks array.
+
+\begin{verbatim}
+# LiteLLM Model configs
+...
+...
+
+# LangFuse OTEL config
+litellm_settings:
+  callbacks:
+    - langfuse_otel
+\end{verbatim}
+
+Restart your Docker container to apply the new environment variables and configuration:
+\begin{verbatim}
+docker restart litellm_proxy
+\end{verbatim}
+
+\subsection{EX 2: Codespace settings - secrets injection}
+An alternative approach to using .env, is to use codespace settings to add the LangFuse secrets here: https://github.com/settings/codespaces
+
+For more details, see the reference documents:
+\begin{enumerate}
+    \item https://dev.to/github/securely-store-environment-variables-with-github-codespaces-3dgc
+    \item https://docs.github.com/en/codespaces/developing-in-a-codespace/persisting-environment-variables-and-temporary-files 
+\end{enumerate}
+
+
+% \subsection*{Step 5: End-to-End Verification}
+% \begin{enumerate}
+%     \item Trigger an AI workflow from your n8n instance that invokes the chat model endpoint.
+%     \item Verify the container logs to ensure no asynchronous export errors (such as 401 or 403) occur.
+%     \item Open the Langfuse SaaS dashboard and navigate to the \textbf{Traces} or \textbf{Generations} tab.
+%     \item You should now see detailed telemetry for your request, including the model used (e.g., \texttt{llama-3.3-70b-versatile}), token usage, latency, and inferred cost.
+% \end{enumerate}
+
+\vfill
+\begin{center}\small
+\textcopyright\ 2026 Sujeet Banerjee. All rights reserved.\\
+Agentic AI Bootcamp -- Educational material.
+\end{center}
+\end{document}

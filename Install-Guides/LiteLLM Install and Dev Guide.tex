@@ -1,0 +1,181 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref,amsmath,amssymb,booktabs,longtable,fancyhdr,array,microtype}
+\hypersetup{colorlinks=true,linkcolor=blue!70!black,urlcolor=blue!70!black}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{Agentic AI Bootcamp}
+\fancyhead[R]{sujeet.banerjee@gmail.com\\sujeet.banerjee.professional@gmail.com}
+\fancyfoot[L]{LiteLLM Proxy Deployment Guide}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}\renewcommand{\footrulewidth}{0.4pt}
+\title{\textbf{Deploying LiteLLM Proxy}\\\large GitHub Codespaces and Google Colab}
+\author{Detailed Notes -- Agentic AI Bootcamp}\date{}
+\begin{document}\maketitle\tableofcontents\newpage
+
+\section{Introduction}
+LiteLLM provides a fast, lightweight proxy server that allows you to call over 100+ LLM APIs using the standard OpenAI format. It manages authentication, load balancing, and fallbacks. This guide covers two alternative environments for quickly spinning up a LiteLLM Proxy for development and testing: GitHub Codespaces and Google Colab.
+
+\section{Deployment Option 1: GitHub Codespaces}
+GitHub Codespaces provides a complete, cloud-hosted Linux development environment directly accessible from your browser, making it an excellent choice for running the proxy alongside other workflow tools.
+
+\subsection{Step 1: Initialize the Environment}
+\begin{enumerate}
+    \item Open a new or existing repository on GitHub.
+    \item Click the \textbf{Code} button, switch to the \textbf{Codespaces} tab, and click \textbf{Create codespace on main}.
+    \item Once the terminal is available, update the package list and install Python pip if necessary:
+    \begin{verbatim}
+sudo apt-get update
+sudo apt-get install python3-pip
+    \end{verbatim}
+\end{enumerate}
+
+\subsection{Step 2: Install LiteLLM}
+Install the LiteLLM package with the proxy dependencies:
+\begin{verbatim}
+pip install 'litellm[proxy]'
+\end{verbatim}
+
+\subsection{Step 3: Configuration}
+Create a \texttt{config.yaml} file in your workspace root to define your models and API keys:
+\begin{verbatim}
+model_list:
+  - model_name: llama-3.3-70b-versatile
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.ENV/GROQ_API_KEY
+\end{verbatim}
+Ensure you export the required API keys in your terminal:
+\begin{verbatim}
+export GROQ_API_KEY="gsk_YOUR_KEY_HERE"
+\end{verbatim}
+
+\subsection{Step 4: Run and Expose the Proxy}
+Start the proxy server:
+\begin{verbatim}
+litellm --config config.yaml --port 4000
+\end{verbatim}
+Navigate to the \textbf{Ports} tab in your Codespace. Locate port \texttt{4000}, right-click the visibility setting, and change it from \textbf{Private} to \textbf{Public}. You can now use the forwarded URL as your standard OpenAI API Base URL.
+
+\section{Deployment Option 2: GitHub Codespaces using Docker Compose}
+While running LiteLLM directly via Python is useful, deploying it as a containerized service using Docker Compose closely mirrors production environments and easily integrates alongside other workflow orchestration containers.
+
+\subsection{Step 1: Create the Configuration Files}
+First, define your model routing and observability callbacks in a \texttt{litellm\_config.yaml} file at the root of your workspace:
+\begin{verbatim}
+model_list:
+  - model_name: llama-3.3-70b-versatile
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.ENV/GROQ_API_KEY
+
+litellm_settings:
+  success_callbacks: ["langfuse"]
+  failure_callbacks: ["langfuse"]
+\end{verbatim}
+
+\subsection{Step 2: Define Environment Variables}
+Create an \texttt{.env} file to store your credentials securely. This ensures sensitive keys are passed safely into the container environment:
+\begin{verbatim}
+GROQ_API_KEY=gsk_YOUR_GROQ_KEY_HERE
+LANGFUSE_PUBLIC_KEY=pk-lf-YOUR_PUBLIC_KEY_HERE
+LANGFUSE_SECRET_KEY=sk-lf-YOUR_SECRET_KEY_HERE
+LANGFUSE_HOST=https://jp.cloud.langfuse.com
+\end{verbatim}
+
+\subsection{Step 3: Create the Docker Compose File}
+Create a \texttt{docker-compose.yml} file that pulls the official LiteLLM image, mounts your configuration, and loads the environment variables:
+\begin{verbatim}
+version: '3.8'
+services:
+  litellm_proxy:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm_proxy
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    env_file:
+      - .env
+    command: [ "--config", "/app/config.yaml", "--port", "4000" ]
+\end{verbatim}
+
+\subsection{Step 4: Launch and Expose the Service}
+\begin{enumerate}
+    \item Start the container stack in detached mode by running:
+    \begin{verbatim}
+docker-compose up -d
+    \end{verbatim}
+    \item Verify the container is running and check the initial startup logs:
+    \begin{verbatim}
+docker logs -f litellm_proxy
+    \end{verbatim}
+    \item In your Codespace, navigate to the \textbf{Ports} tab at the bottom panel. Locate port \texttt{4000}, right-click under the \textbf{Visibility} column, and change it from \textbf{Private} to \textbf{Public}. 
+    \item Copy the forwarded URL provided by GitHub. This URL acts as your standard OpenAI API Base URL for connecting agentic nodes.
+\end{enumerate}
+
+\section{Deployment Option 3: Google Colab}
+Google Colab offers a free Jupyter Notebook environment. While primarily used for interactive execution, you can use localtunnel or ngrok to expose a background LiteLLM proxy process to the public internet.
+
+\subsection{Step 1: Setup and Installation}
+Open a new Google Colab notebook and run the following in a cell to install LiteLLM and localtunnel:
+\begin{verbatim}
+!pip install 'litellm[proxy]'
+!npm install -g localtunnel
+\end{verbatim}
+
+\subsection{Step 2: Configure Environment and YAML}
+Write the configuration to the Colab filesystem and set environment variables:
+\begin{verbatim}
+import os
+os.environ["GROQ_API_KEY"] = "gsk_YOUR_KEY_HERE"
+
+yaml_content = """
+model_list:
+  - model_name: gpt-3.5-turbo
+    litellm_params:
+      model: groq/llama-3.3-70b-versatile
+      api_key: os.ENV/GROQ_API_KEY
+"""
+with open("config.yaml", "w") as f:
+    f.write(yaml_content)
+\end{verbatim}
+
+\subsection{Step 3: Start Proxy and Tunnel}
+Run the proxy in the background using \texttt{nohup} and expose it using localtunnel:
+\begin{verbatim}
+!nohup litellm --config config.yaml --port 4000 > proxy.log 2>&1 &
+!lt --port 4000
+\end{verbatim}
+The output will provide a public \texttt{loca.lt} URL. You must click the provided link once to bypass the localtunnel warning screen, after which the URL acts as your public API base.
+
+\section{Reference Tutorials}
+Below are essential reference materials for further expanding your LiteLLM architecture:
+
+\begin{itemize}
+    \item \textbf{Quick Start:}\\
+    \url{https://docs.litellm.ai/docs/proxy/docker_quick_start}\\
+    \textit{Summary:} A rapid guide to deploying the LiteLLM proxy locally using Docker containers.
+    
+    \item \textbf{Hand's On Tutorial:}\\
+    \url{https://colab.research.google.com/github/BerriAI/litellm/blob/main/cookbook/liteLLM_Getting_Started.ipynb}\\
+    \textit{Summary:} An interactive Jupyter/Colab notebook demonstrating the fundamentals of making unified API calls with LiteLLM.
+    
+    \item \textbf{GitHub Copilot Integration:}\\
+    \url{https://docs.litellm.ai/docs/tutorials/github_copilot_integration}\\
+    \textit{Summary:} Instructions on securely routing GitHub Copilot traffic through your custom LiteLLM proxy setup.
+    
+    \item \textbf{OpenTelemetry (OTEL) v2:}\\
+    \url{https://docs.litellm.ai/docs/observability/opentelemetry_v2}\\
+    \textit{Summary:} Documentation for setting up standardized OTEL tracing and metrics for robust observability.
+    
+    \item \textbf{Langfuse Integration:}\\
+    \url{https://docs.litellm.ai/docs/observability/langfuse_integration}\\
+    \textit{Summary:} Step-by-step configuration for sending LiteLLM generations and traces directly to Langfuse.
+\end{itemize}
+
+\vfill
+\begin{center}\small
+\textcopyright\ 2026 Sujeet Banerjee. All rights reserved.\\
+Agentic AI Bootcamp -- Educational material.
+\end{center}
+\end{document}

@@ -1,0 +1,98 @@
+{
+  "name": "Bootcamp-Day23A-Agent-Telemetry",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "eeeb4298-c524-4646-b32b-4477d7bb8d3a",
+      "name": "When chat message received",
+      "webhookId": "7deb90ed-ada4-41da-9441-c52a8918a15e"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        16,
+        -64
+      ],
+      "id": "ab2aac1e-1c7f-486e-8c52-5f7ffa5d1d0e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt4o",
+          "mode": "list",
+          "cachedResultName": "gpt4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        96
+      ],
+      "id": "8a5a913c-024c-4d9c-afdc-de796ded0120",
+      "name": "LiteLLM - gpt40",
+      "credentials": {
+        "openAiApi": {
+          "id": "df6qKrgkYuCgKWhS",
+          "name": "LiteLLM Bcmp Codespc Friendly Trout"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiteLLM - gpt40": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "87f3b971-1ccf-4c80-85d8-a3bb70fa52a4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "eGIdh5npWshroUvw",
+  "tags": []
+}

@@ -38,9 +38,14 @@ file_metadata -->
 
 EMBEDDING MODEL: sentence-transformers/distilbert-base-nli-mean-tokens (Hugging Face)
 
+
+Data Loader
+--------------
+set metadata
+
 INVOCATION
 ==========
-
+ Invoke-RestMethod -Uri "http://host.docker.internal:5678/webhook-test/retrieve" -Method POST -ContentType "application/json" -Body '{"query":"As a new joiniee how many leaves am I entitled to, in a year?", "sessionId": "ABC123"}'
 
 
 
