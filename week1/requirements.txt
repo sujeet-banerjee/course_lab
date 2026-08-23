@@ -17,6 +17,9 @@ numpy
 matplotlib
 streamlit
 
+# Postgres
+psycopg2-binary
+
 matplotlib
 plotly
 openpyxl

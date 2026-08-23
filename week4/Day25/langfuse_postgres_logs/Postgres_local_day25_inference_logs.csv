@@ -1,0 +1,8 @@
+"session_id","request_id","created_at","question","answer","context","rag_used","query_type","langfuse_trace_id","error","groundedness","relevancy","context_precision","context_recall","evaluated_at"
+"ABC123","2116","2026-08-20 11:21:45.876+00","As a new joiniee how many leaves am I entitled to, in a year?","As a new joiniee, you are entitled to a total of 33 days of leave in a year, which includes:
+
+* Annual Leave: 18 days
+* Medical Leave: 10 days
+* Casual Leave: 5 days
+
+This is based on the Time Off and Leave Policy for Full-Time employees.","{}",False,"general",NULL,NULL,0.0,0.0,0.0,0.0,NULL

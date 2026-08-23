@@ -8,6 +8,20 @@ id: "cmraieitl0001p9076de9z4vf"
 }
 
 
+POSTGRES
+===========
+PGadmin:
+---Conn ---
+(host.docker.internal:5432)
+localhost:5432
+ai_user / ai_password 
+--- databases (each has one credential) ---
+CHAT_MEM: chat_mem_day12
+LITELLM: ai_database
+INFERENCE LOGS: week4 (Table Name: public.day25_inference_logs)
+
+
+
 ============================
 
 

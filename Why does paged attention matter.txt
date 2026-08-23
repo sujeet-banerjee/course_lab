@@ -1,0 +1,37 @@
+Why does paged attention matter?
+
+Explain:
+
+How KV cache works
+
+Why memory fragmentation happens
+
+How paged attention reduces waste
+
+What happens when context length increases
+
+Throughput vs Latency Trade-off
+Explain:
+
+What is token/sec?
+
+What determines first-token latency?
+
+Why batching increases throughput but increases latency?
+
+How continuous batching works?
+
+When would enterprise prefer low latency over high throughput?
+
+derive:
+
+Cost per request =
+(Compute cost per second × inference time) + embedding cost + vector search cost
+
+Estimate:
+
+GPT-4 class model vs 7B open model
+
+GPU amortization per hour
+
+Typical RAG query cost range

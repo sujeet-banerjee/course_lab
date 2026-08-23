@@ -1,0 +1,1648 @@
+{
+  "name": "Bootcamp-Day26,27,28A - Agentic HR System with EVAL",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        128,
+        592
+      ],
+      "id": "77c6c24e-e6ed-43ab-b31a-8d337922bb8e",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "rPvHkNCLESvHtodB",
+          "name": "Hugging Face account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Objective\n* **LiteLLM Proxy** Using Basic LLM chain, with a proxy for routing to any LLM\n* No code change\n\n* Endpoint: http://host.docker.internal:5678/webhook-test/ng/qna\n\n#### Invocation\n##### WIN:\n```\n Invoke-RestMethod -Uri \"http://host.docker.internal:5678/webhook-test/ng/qna\" -Method POST -ContentType \"application/json\" -Body '{\"userMessage\":\"As a new joiniee how many leaves am I entitled to, in a year?\", \"sessionId\": \"ABC123\"}'\n```\n\n##### Linus/MacOS\ncurl  \"http://host.docker.internal:5678/webhook-test/ng/qna\" -X POST -ContentType \"application/json\" -Body '{\"userMessage\":\"As a new joiniee how many leaves am I entitled to, in a year?\", \"sessionId\": \"ABC123\"}'\n\n\n#### NOTE\n##### Changelog:\n1. Segregated the models (via LiteLLM) of router from the specialized agents, so that we could log the 'route' selectively to LiteLLM for specialized agents\n2. Added 'If' node (checkUserMessage) for handling user request error.\n3. Removed ConversationId passed to Groq LLM as {{  $json.sessionId + ':' + $json.requestId }}, because, Not supported by LLamma (Note recommended)",
+        "height": 336,
+        "width": 832
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1456,
+        336
+      ],
+      "id": "b47fe025-2c18-42b6-8b36-8f5ae5b51055",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "mini_enterprise_rag",
+          "mode": "list",
+          "cachedResultName": "mini_enterprise_rag"
+        },
+        "prompt": "={{ $json.userMessage }}",
+        "topK": 8,
+        "useReranker": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        368
+      ],
+      "id": "9c61d3c7-1493-4e16-8902-44486bce1b40",
+      "name": "Qdrant Vector Store - RETRIEVAL",
+      "notesInFlow": true,
+      "credentials": {
+        "qdrantApi": {
+          "id": "lMGjgVf32OvVeWxR",
+          "name": "Qdrant account"
+        }
+      },
+      "notes": "RETRIEVAL"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "position": [
+        256,
+        592
+      ],
+      "id": "e279c349-455c-4636-b4c7-201984b3b6d6",
+      "name": "Reranker Cohere",
+      "credentials": {
+        "cohereApi": {
+          "id": "aMCpU7cNNmxXjSU6",
+          "name": "Cohere account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "document.pageContent",
+              "renameField": true,
+              "outputFieldName": "context"
+            }
+          ]
+        },
+        "options": {
+          "mergeLists": true
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        592,
+        368
+      ],
+      "id": "b6e86a6b-35b0-4d09-a89c-58980837ffee",
+      "name": "Aggregate Chunks"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8d63bb73-b04a-4d89-99d3-d1bf54c23230",
+              "name": "context",
+              "value": "={{ $json.context }}",
+              "type": "array"
+            },
+            {
+              "id": "e45f19cb-1a43-4fa2-834b-8584f74c5437",
+              "name": "question",
+              "value": "={{ $('Merge_Session_details').item.json.userMessage }}",
+              "type": "string"
+            },
+            {
+              "id": "10bf5a60-afd8-41b6-9b86-7b181feb6a09",
+              "name": "sessionId",
+              "value": "={{ $('Merge_Session_details').item.json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "document.pageContent",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        368
+      ],
+      "id": "5ddd7e94-ccd1-4140-8b76-fe85ebe4625f",
+      "name": "Set Context and Question"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1840,
+        368
+      ],
+      "id": "c8f6d9a0-f6ab-4d35-beba-4260e0f3c410",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "groq/openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "groq/openai/gpt-oss-120b"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3,
+          "metadata": "={\n\"request_id\": \"{{ $('Merge_Session_details').item.json.requestId }}\",\n  \"session_id\": \"{{ $('Merge_Session_details').item.json.sessionId }}\",\n  \"request_time\": \"{{ $('Merge_Session_details').item.json.requestTime }}\",\n\"route\": \"{{ $('Merge_Session_details').item.json.output }}\",\n\n\"langfuse.trace.metadata.route\": \"{{ $('Merge_Session_details').item.json.output }}\",\n\n\"langfuse.trace.metadata.request_id\": \"{{ $('Merge_Session_details').item.json.requestId }}\",\n\n\"langfuse.session.id\": \"{{ $('Merge_Session_details').item.json.requestId }}\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1152,
+        480
+      ],
+      "id": "122ef439-4613-4248-9a62-7d3991d2ba67",
+      "name": "LiteLLM Proxy - Groq/llama",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt4o",
+          "mode": "list",
+          "cachedResultName": "gpt4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3,
+          "conversationId": "={{ $json.requestId }}",
+          "metadata": "={\n\"request_id\": \"{{ $('Merge_Session_details').item.json.requestId }}\",\n  \"session_id\": \"{{ $('Merge_Session_details').item.json.sessionId }}\",\n  \"request_time\": \"{{ $('Merge_Session_details').item.json.requestTime }}\",\n\"route\": \"{{ $('Merge_Session_details').item.json.output }}\",\n\n\"langfuse.trace.metadata.route\": \"{{ $('Merge_Session_details').item.json.output }}\",\n\n\"langfuse.trace.metadata.request_id\": \"{{ $('Merge_Session_details').item.json.requestId }}\",\n\n\"langfuse.session.id\": \"{{ $('Merge_Session_details').item.json.requestId }}\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        480
+      ],
+      "id": "c8495f2e-516a-46ab-b2a6-16360b80dbb3",
+      "name": "LiteLLM Proxy - GPT-4.0",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "ollama/llama3",
+          "mode": "list",
+          "cachedResultName": "ollama/llama3"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2096,
+        80
+      ],
+      "id": "386c884d-0f55-42a3-99b8-fdf28b9222b9",
+      "name": "LiteLLM Proxy - Ollama/llama3",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "disabled": true,
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        464,
+        784
+      ],
+      "id": "f3c5a01d-5d74-404b-af5a-62152ed92c99",
+      "name": "Calculator Tool",
+      "notesInFlow": true,
+      "notes": "Perform arithmetic calculations.\n\nUse this tool whenever the user asks for:\n\naddition\n\nsubtraction\n\nmultiplication\n\ndivision\n\npercentage\n\nsquare root\n\nmathematical expressions."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        592,
+        784
+      ],
+      "id": "813fa64c-9dc8-4f6c-9f9b-53ba98317c36",
+      "name": "Time Tool"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Provide the currency exchange value from 'from_currency' to 'to_currency'. \n\nInputs required: from_currency and to_currency\n",
+        "url": "https://api.frankfurter.dev/v1/latest",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "base",
+              "value": "={{ $fromAI(     'from_currency',     'Three-letter source currency code such as USD, EUR, INR',     'string' )}}"
+            },
+            {
+              "name": "symbols",
+              "value": "={{ $fromAI(     'to_currency',     'Three-letter target currency code',     'string' )}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        720,
+        784
+      ],
+      "id": "4c63dc6c-cfed-4856-9607-e22a36195b70",
+      "name": "Exchange Tool"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Merge_Session_details').item.json.sessionId }}",
+        "tableName": "n8n_day13_chat_histories",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        1408,
+        480
+      ],
+      "id": "25a60df2-3bde-42e0-9f2a-5f0cbb17b0bf",
+      "name": "Postgres Chat Memory",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "VjlcRyuvDpgUETbc",
+          "name": "chat_mem_day12"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $json.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a routing agent.\n\nYour ONLY responsibility is deciding which specialist agent\nshould answer the question.\n\nAvailable specialists:\n\nweather\nfinance\nhr\ngeneral\n\nFinance includes:\n\n- date\n- time\n- duration\n- day of week\n- calculator\n- currency conversion\n- stock prices\n\n\nWeather includes:\n\n- temperature\n- humidity\n- forecast\n- rain\n- climate\n\nHr include:\n\n- leaves\n- office policies\n- office travels \n- domestic office travels\n- international office travels\n- code of conduct\n- conflict of interest\n- HR related queries\n\nEverything else is general.\n\nReturn ONLY the valid String, that is, one of \"weather\", \"finance\" or \"general\".\n\nExample:\n\"weather\"\n\nDo not explain.\n\nDo not answer the user's question.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -672,
+        736
+      ],
+      "id": "c71a189e-cced-4e8b-b98c-cd4e9d3ec061",
+      "name": "Router Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "finance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b8983b64-6b76-46ee-81d1-ccf1e769b175"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a33ddabc-f0d6-4a1b-8eb3-d0830e24619a",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "weather",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e8d32798-61ce-4690-bd0b-0b9ec3f9d9e7",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "general",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d7e04a25-85e8-4db6-b857-f3bac0afcf26",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "hr",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -112,
+        848
+      ],
+      "id": "2e91902c-8bda-491d-86f3-1422c3b76e59",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Weather Tool: Retrieves the current weather for a city.\n\nUse this tool whenever the user asks about:\n\nweather\n\ntemperature\n\nhumidity\n\nforcast\n\nWeather advice\n\nrain\n\nclimate\n\nTOOL INPUT:\nThe input must be a json, with \"city\" field as mandatory, for example:\n  \n{\n \n\"city\": \n\"Bangalore\"\n}\n",
+        "method": "POST",
+        "url": "=http://localhost:5678/webhook/weather",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "city",
+              "value": "={{ $fromAI('city', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        592,
+        1184
+      ],
+      "id": "a0bc02b2-7825-4688-b5fe-cc35f75441a0",
+      "name": "Weather tool"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ng/qna",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": false,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "agents-used"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1312,
+        896
+      ],
+      "id": "011c37b7-d2fc-414c-b5c3-b6331063a1a5",
+      "name": "Webhook_chat_day25",
+      "webhookId": "e4aac2c5-e8f2-43b7-a41e-2e3e59b3d088",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('Webhook_chat_day25').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a finance assistant.\n\nYou answer:\n\ncurrency\ncalculator\nstock prices\ndate\ntime\nduration\nday of week\n\n\nAlways use the appropriate tool.\n\nNever estimate.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\n\n\n",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        528,
+        560
+      ],
+      "id": "f5952f62-cc2e-4306-b4d9-cb79e01dd551",
+      "name": "Finance Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $('Webhook_chat_day25').item.json.body.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are a helpful AI assistant.\n\nYour primary objective is to answer user query accurately. Additionally, the user may be interested in ongoing chat, so engage him appropriately\n\nYou have access to external tools.\n\nWhenever a tool can produce a more reliable answer than reasoning alone, use the tool.\n\nExamples:\n\nArithmetic\n→ Calculator Tool\n\nWeather\n→ Weather Tool\n\nCurrent date/time\n→ Time Tool\n\nCurrency / Exchange rates\n-> Exchange Tool\n\nGeneral knowledge\n→ Answer directly.\n\nNever invent calculator results when a calculator tool is available.\n\nAlways use the most appropriate tool. \n\nIf using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body. \n\nAlways form an appropriate response from the tool output, without explicitly quoting the 'output from the HTTP_Request tool'",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        512,
+        1328
+      ],
+      "id": "8df7d5c8-f1a8-4bb4-84e7-7e203d0b4fe9",
+      "name": "General Knowledge Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user query: {{ $json.userMessage }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are the Weather Specialist.\n\nAlways use the Weather Tool.\n\nNever answer finance questions.\n\nNever answer calculator questions.\n\nWhen using weather tool, extract the city from the query, and pass it as \"city\" json field in the request body.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        528,
+        960
+      ],
+      "id": "1befe782-8803-470b-bf4c-78cfac9b40dc",
+      "name": "Weather Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Question: {{ $json.question }}\n\nContext:\n-----------------------------\n{{ $json.context }}\n-----------------------------",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "You are an HR Assistant.  \n\nYou are given the Context and a Question.\n\nAnswer ONLY from the supplied context.  \n\nIf the answer cannot be found in the context, say:  \"I couldn't find this information in the policies.\"  \n\nNever invent policies.\n\nQuote relevant sections whenever possible."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1216,
+        256
+      ],
+      "id": "5d3145f5-3e2d-4a17-9e74-b7092d11b78d",
+      "name": "HR Agent",
+      "notesInFlow": true,
+      "notes": "RAG Based Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "978e84e3-92cc-49ee-8ff9-c56b8a9cbb58",
+              "name": "answer",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "0414f194-3b32-4cf3-b8b9-6d8311f94ce8",
+              "name": "requestId",
+              "value": "={{ $('SetRequestDetails').item.json.requestId }}",
+              "type": "string"
+            },
+            {
+              "id": "dfe26f3d-5b79-4290-8f9e-8c4637ea6b3c",
+              "name": "route",
+              "value": "={{ $('Router Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "3d70984d-f7fc-40e2-8e93-d0952e11ebf0",
+              "name": "ragUsed",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        256
+      ],
+      "id": "d1f65ecf-680e-4b92-a65e-ed5a214b3d38",
+      "name": "set HR Answer"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2064,
+        704
+      ],
+      "id": "7d1ecffd-2bc7-4927-b5a7-ff511ee88c6f",
+      "name": "Merge1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c44bfce4-54b2-44d4-bb84-cba6446e6b8c",
+              "name": "answer",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "1ebb2014-7933-4a3f-83a3-4801b8be3d27",
+              "name": "question",
+              "value": "={{ $('Switch').item.json.userMessage }}",
+              "type": "string"
+            },
+            {
+              "id": "81cc82cf-1890-4d14-ab57-89b323d1eaed",
+              "name": "sessionId",
+              "value": "={{ $('Switch').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "87b8779d-2862-4090-bed3-c67c1794e960",
+              "name": "requestId",
+              "value": "={{ $('SetRequestDetails').item.json.requestId }}",
+              "type": "string"
+            },
+            {
+              "id": "97f9d6ac-dc46-400f-a653-7fda66221c9a",
+              "name": "ragUsed",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "b6561c3e-8398-4d66-ab36-8999b83658b4",
+              "name": "context",
+              "value": "[]",
+              "type": "array"
+            },
+            {
+              "id": "bac21e17-4480-4a74-ae24-4164c82b1f61",
+              "name": "route",
+              "value": "={{ $('Router Agent').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1376,
+        1040
+      ],
+      "id": "12319c60-d6fd-47af-a2a4-4bb2ef993e91",
+      "name": "SetQnA"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2288,
+        624
+      ],
+      "id": "f0b211d5-473e-4325-b6ea-768ef5c2e894",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "groq/openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "groq/openai/gpt-oss-120b"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0,
+          "metadata": "={\n\"request_id\": \"{{$json.requestId}}\",\n  \"session_id\": \"{{$json.sessionId}}\",\n  \"request_time\": \"{{$json.requestTime}}\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        1056
+      ],
+      "id": "13f52e1f-b90c-4c19-9333-23de29e6f154",
+      "name": "Router - LiteLLM Proxy - Groq/llama",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt4o",
+          "mode": "list",
+          "cachedResultName": "gpt4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0,
+          "conversationId": "={{  $json.sessionId + ':' + $json.requestId }}",
+          "metadata": "={\n\"request_id\": \"{{$json.requestId}}\",\n  \"session_id\": \"{{$json.sessionId}}\",\n  \"request_time\": \"{{$json.requestTime}}\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -688,
+        1072
+      ],
+      "id": "fe276cc8-3e37-4db7-a712-9e5b6f0b2528",
+      "name": "Router - LiteLLM Proxy - GPT-4.01",
+      "notesInFlow": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "HlnC3pZ3ygJGWeir",
+          "name": "LiteLLM Proxy"
+        }
+      },
+      "notes": "LiteLLM Proxy"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -336,
+        864
+      ],
+      "id": "5f40e50b-60a1-4dc6-94e6-4f65d4362329",
+      "name": "Merge_Session_details"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"The request doesnot have 'userMessage' field\"\n}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -912,
+        1104
+      ],
+      "id": "3b7ea695-25d0-475a-bad5-67a048220c8e",
+      "name": "Error Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2d8cffc2-b3fc-492a-9d1f-7b6dec016151",
+              "leftValue": "={{ $json.body }}",
+              "rightValue": "=userMessage",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1104,
+        896
+      ],
+      "id": "57364fb4-eca5-4da4-8691-4548f8f6078a",
+      "name": "checkUserMessage"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ae46edc2-c1d6-4e0b-bb2f-edbcf1a50b48",
+              "name": "sessionId",
+              "value": "={{ $json.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        912
+      ],
+      "id": "c8e6d7ee-56b4-402d-8e46-d637e2d272f4",
+      "name": "SetSessionId",
+      "notesInFlow": true,
+      "notes": "Set SessionId again! For the the following agent to work!"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f905ad36-ef6a-4243-861a-ebad705dfb17",
+              "name": "userMessage",
+              "value": "={{ $json.body.userMessage }}",
+              "type": "string"
+            },
+            {
+              "id": "f06efa68-5ba7-4629-85e3-aa2c5e780999",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "a2373087-c80c-4264-998b-19c084df60df",
+              "name": "requestId",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            },
+            {
+              "id": "907cf5f1-cc83-4bb7-8f83-0e44ed145693",
+              "name": "requestTime",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        880
+      ],
+      "id": "09ad9738-ff3b-4852-952a-b6bc9b0b99af",
+      "name": "SetRequestDetails"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE public.day25_inference_logs\n(\n    session_id        varchar(100) NOT NULL,\n    request_id        varchar(100) NOT NULL,\n\n    created_at        timestamptz NOT NULL DEFAULT now(),\n\n    question          text NOT NULL,\n    answer            text,\n\n    context           text[],\n\n    rag_used          boolean NOT NULL DEFAULT false,\n\n    -- query type is same as the route\n    query_type        varchar(50),\n    langfuse_trace_id varchar(64),\n\n    error             text,\n\n    -- Offline evaluation results\n    groundedness      double precision,\n    relevancy         double precision,\n    context_precision double precision,\n    context_recall    double precision,\n\n    evaluated_at      timestamptz,\n\n    PRIMARY KEY (session_id, request_id)\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2080,
+        -160
+      ],
+      "id": "4e8c7576-41b7-442f-87d7-9e1f8f8503da",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "OPm4KKrhvcCMm5Nc",
+          "name": "CockroachDB-Bootcamp-week4"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "day25_inference_logs",
+          "mode": "list",
+          "cachedResultName": "day25_inference_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "rag_used": "={{ $json.ragUsed }}",
+            "groundedness": 0,
+            "relevancy": 0,
+            "context_precision": 0,
+            "context_recall": 0,
+            "session_id": "={{ $json.sessionId }}",
+            "question": "={{ $json.question }}",
+            "context": "={{ $json.context }}",
+            "request_id": "={{ $json.requestId }}",
+            "answer": "={{ $json.answer }}",
+            "query_type": "={{ $json.route }}",
+            "created_at": "={{ $('Merge_Session_details').item.json.requestTime }}"
+          },
+          "matchingColumns": [
+            "session_id",
+            "request_id"
+          ],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "request_id",
+              "displayName": "request_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "answer",
+              "displayName": "answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "context",
+              "displayName": "context",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "array",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "rag_used",
+              "displayName": "rag_used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "query_type",
+              "displayName": "query_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "langfuse_trace_id",
+              "displayName": "langfuse_trace_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "groundedness",
+              "displayName": "groundedness",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "relevancy",
+              "displayName": "relevancy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "context_precision",
+              "displayName": "context_precision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "context_recall",
+              "displayName": "context_recall",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "evaluated_at",
+              "displayName": "evaluated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2288,
+        816
+      ],
+      "id": "d6f96233-3a58-4146-a9f4-2579831ac23c",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "Jxwpc8MabcnHBr5g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from  public.day25_inference_logs;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2272,
+        0
+      ],
+      "id": "50d41178-6920-45c0-8cf9-bb874705aa07",
+      "name": "Fetch_EVAL_records",
+      "credentials": {
+        "postgres": {
+          "id": "Jxwpc8MabcnHBr5g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.n8n_day13_chat_histories\nORDER BY id ASC ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2544,
+        304
+      ],
+      "id": "4b494d7e-1263-45a8-947b-c71267983755",
+      "name": "Fetch_Conv_records",
+      "credentials": {
+        "postgres": {
+          "id": "VjlcRyuvDpgUETbc",
+          "name": "chat_mem_day12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM public.n8n_day13_chat_histories ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2544,
+        464
+      ],
+      "id": "7d084525-b326-402a-abad-2abbd16e546f",
+      "name": "DELETE_Conv_records",
+      "credentials": {
+        "postgres": {
+          "id": "VjlcRyuvDpgUETbc",
+          "name": "chat_mem_day12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "delete from  public.day25_inference_logs;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2272,
+        144
+      ],
+      "id": "fcecf7d6-c7f2-473a-b371-aa4095885d71",
+      "name": "DELETE_EVAL_records",
+      "credentials": {
+        "postgres": {
+          "id": "Jxwpc8MabcnHBr5g",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store - RETRIEVAL": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "ai_reranker",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Chunks": {
+      "main": [
+        [
+          {
+            "node": "Set Context and Question",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Context and Question": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "HR Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiteLLM Proxy - Groq/llama": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "General Knowledge Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "HR Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Weather Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiteLLM Proxy - GPT-4.0": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "HR Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "General Knowledge Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "Weather Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          },
+          {
+            "node": "Finance Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Calculator Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exchange Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "General Knowledge Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Weather Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "HR Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Router Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge_Session_details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Finance Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetSessionId",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "General Knowledge Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Qdrant Vector Store - RETRIEVAL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Weather Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_chat_day25": {
+      "main": [
+        [
+          {
+            "node": "checkUserMessage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR Agent": {
+      "main": [
+        [
+          {
+            "node": "set HR Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Agent": {
+      "main": [
+        [
+          {
+            "node": "SetQnA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finance Agent": {
+      "main": [
+        [
+          {
+            "node": "SetQnA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "General Knowledge Agent": {
+      "main": [
+        [
+          {
+            "node": "SetQnA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set HR Answer": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetQnA": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router - LiteLLM Proxy - Groq/llama": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Router - LiteLLM Proxy - GPT-4.01": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge_Session_details": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "checkUserMessage": {
+      "main": [
+        [
+          {
+            "node": "SetRequestDetails",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetSessionId": {
+      "main": [
+        [
+          {
+            "node": "Weather Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetRequestDetails": {
+      "main": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge_Session_details",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3b6fb9a5-53f4-4444-aa1a-0a49e3b056aa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "99e3edd95ce131aea93ea1536f24c46e67a066c43a09a0573dbd110f1235a745"
+  },
+  "nodeGroups": [],
+  "id": "sJW9hXj3OuIG3Fq0",
+  "tags": []
+}

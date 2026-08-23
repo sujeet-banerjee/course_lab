@@ -1,0 +1,11 @@
+select * from public.day25_inference_logs where request_id = '2116';
+-------------------------------
+
+session_id,request_id,created_at,question,answer,context,rag_used,query_type,langfuse_trace_id,error,groundedness,relevancy,context_precision,context_recall,evaluated_at
+ABC123,2116,2026-08-20T11:21:57.785Z,"As a new joiniee how many leaves am I entitled to, in a year?","As a new joiniee, you are entitled to a total of 33 days of leave in a year, which includes:
+
+* Annual Leave: 18 days
+* Medical Leave: 10 days
+* Casual Leave: 5 days
+
+This information is based on the Time Off and Leave Policy, which states that Full-Time employees are entitled to these annual leave allocations.","[""tems remotely.\n4 Time Off and Leave Policy\nWork-life balance is essential. Full-Time employees are entitled to the following annual leave\nallocations:\n• Annual Leave: 18 days. Requests should normally be submitted at least two weeks in\nadvance via the HR portal.\n• Medical Leave: 10 days. A medical certificate may be required for absences exceeding\n3 consecutive days.\n• Casual Leave: 5 days. Intended for unforeseen personal matters.\n5 Performance and Growth\n5.1 Performance Reviews"",""tems remotely.\n4 Time Off and Leave Policy\nWork-life balance is essential. Full-Time employees are entitled to the following annual leave\nallocations:\n• Annual Leave: 18 days. Requests should normally be submitted at least two weeks in\nadvance via the HR portal.\n• Medical Leave: 10 days. A medical certificate may be required for absences exceeding\n3 consecutive days.\n• Casual Leave: 5 days. Intended for unforeseen personal matters.\n5 Performance and Growth\n5.1 Performance Reviews"",""up to termination. Violations may result in corrective action up to termination.""]",true,hr,null,null,0,0,0,0,null
