@@ -1,0 +1,99 @@
+
+
+
+LangFuse LLM config (for 'llm-as-a-judge') CONFIG
+---------
+LLM Adapter: openAI
+
+Name: Groq-bootcamp
+
+API Base URL
+https://api.groq.com/openai/v1
+
+GROQ: <<Secret Key>>
+
+Custom models:
+- openai/gpt-oss-20b
+- openai/gpt-oss-120b
+
+
+N8N
+======
+WORKFLOW: Bootcamp-Day26,27,28A - Agentic HR System with EVAL
+
+Explain: session_id, request_id
+Explain: use of POstgres EVal bifurcation
+
+
+POST /retrieve
+
+
+INVocations:
+---------------------
+Invoke-RestMethod -Uri "http://host.docker.internal:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage":"As a new joiniee how many leaves am I entitled to, in a year, as per the company policy?", "sessionId": "ABC123"}'
+
+
+Invoke-RestMethod -Uri "http://host.docker.internal:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage":"Whose approval is needed for international office/business travel? Can I take my office laptop while I am on international office travel?", "sessionId": "ABC123"}'
+
+
+Invoke-RestMethod -Uri "http://host.docker.internal:5678/webhook-test/ng/qna" -Method POST -ContentType "application/json" -Body '{"userMessage":"Can I take my office laptop while during an international office travel? What do I need to take care?", "sessionId": "ABC123"}'
+
+
+
+
+
+
+
+
+
+---------------------------- X ---------------------- X -----------------
+
+====== CODESPACES (FOR LITELLM CLOUD DEPLOY) =======
+
+1. login to github
+                git clone git@github.com:sujeet-banerjee/agentic-crew.git
+                git checkout enhance/saasify
+2. https://github.com/codespaces configure a new codepace
+3. Configure secrets in codespaces: https://github.com/settings/codespaces
+
+From Codespace Terminal:
+------------------
+env | grep LANG
+
+
+LANGFUSE_SECRET_KEY="sk-lf-..."
+LANGFUSE_PUBLIC_KEY="pk-lf-..."
+LANGFUSE_BASE_URL="https://jp.cloud.langfuse.com"
+
+
+LiteLLM container logs
+---------------
+docker logs -f litellm_proxy
+
+============== Lite LLM Config ===========
+
+Start LiteLLM
+-------------
+docker-compose -f docker-compose-codespace.yml down
+docker-compose -f docker-compose-codespace.yml up -d
+
+
+
+============== LangFuse =============
+https://jp.cloud.langfuse.com/project/cmrg47nul007sad0ezkovasia/traces
+Login using <Prof Gmail>
+
+
+LiteLLM Debug: 
+docker exec litellm_proxy env | grep LANG
+
+LiteLLM container logs:
+docker logs -f litellm_proxy
+
+===== N8N WF + LiteLLM =========
+
+
+Create a simple agent with N8N default 'Chat' node, use LiteLLM Credential (with the codespace URL/Domain)
+
+
+
